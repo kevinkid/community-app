@@ -180,9 +180,10 @@ challenges in this sub community
 
   const communityOps = communityFilters.filter(community => !community.hidden)
     .map(community => ({
-      label: getLabel(community),
+      label: community.communityName,
       value: community.communityId,
       name: community.communityName,
+      data: getLabel(community),
     }));
 
   const disableClearSaveFilterButtons = isSavingFilter || (
@@ -211,8 +212,10 @@ Filters
           <div styleName="filter keywords">
             <label htmlFor="keyword-select" styleName="left-label">
 Keywords
+              <input type="hidden" />
             </label>
             <Select
+              placeholder="Select Keywords"
               id="keyword-select"
               multi
               onChange={(value) => {
@@ -227,6 +230,7 @@ Keywords
           <div styleName="filter community">
             <label htmlFor="community-select">
 Sub community
+              <input type="hidden" />
             </label>
             <Select
               autoBlur
@@ -248,8 +252,10 @@ Sub community
           <div styleName="filter track">
             <label htmlFor="track-select" styleName="left-label">
 Subtrack
+              <input type="hidden" />
             </label>
             <Select
+              placeholder="Select Subtrack"
               id="track-select"
               multi
               onChange={(value) => {
@@ -269,6 +275,7 @@ Subtrack
               <div styleName="filter review-type">
                 <label htmlFor="review-type-select">
 Review Type
+                  <input type="hidden" />
                 </label>
                 <Select
                   autoBlur
@@ -291,6 +298,7 @@ Review Type
           <div styleName="filter dates hidetwomonthdatepicker">
             <label htmlFor="date-range-picker-one-month">
 Date range
+              <input type="hidden" />
             </label>
             <DateRangePicker
               numberOfMonths={1}
@@ -311,6 +319,7 @@ Date range
           <div styleName="filter dates hideonemonthdatepicker">
             <label htmlFor="date-range-picker-two-months">
 Date range
+              <input type="hidden" />
             </label>
             <DateRangePicker
               numberOfMonths={2}

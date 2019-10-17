@@ -11,16 +11,19 @@ import _ from 'lodash';
 import path from 'path';
 import React from 'react';
 import PT from 'prop-types';
-import { toastr } from 'react-redux-toastr';
+import ReactTouchEvents from 'react-touch-events';
 import requireContext from 'require-context';
 
 import Select from 'components/Select';
 import { PrimaryButton } from 'topcoder-react-ui-kit';
 import ConsentComponent from 'components/Settings/ConsentComponent';
+import ErrorMessage from 'components/Settings/ErrorMessage';
 import DevFallbackIcon from 'assets/images/profile/skills/id-develop.svg';
 import DesignFallbackIcon from 'assets/images/profile/skills/id-design.svg';
 import DataFallbackIcon from 'assets/images/profile/skills/id-data.svg';
+import VerifiedBadgeIcon from 'assets/images/verified-skill-badge.svg';
 import { isomorphy } from 'topcoder-react-utils';
+import ConfirmationModal from '../../CofirmationModal';
 
 import './styles.scss';
 
@@ -62,18 +65,22 @@ export default class Skills extends ConsentComponent {
   constructor(props) {
     super(props);
     this.onHandleAddSkill = this.onHandleAddSkill.bind(this);
+    this.onHandleDeleteSkill = this.onHandleDeleteSkill.bind(this);
     this.onAddSkill = this.onAddSkill.bind(this);
     this.onUpdateSelect = this.onUpdateSelect.bind(this);
     this.toggleSkill = this.toggleSkill.bind(this);
     this.setPage = this.setPage.bind(this);
     this.updatePredicate = this.updatePredicate.bind(this);
     this.loadPersonalizationTrait = this.loadPersonalizationTrait.bind(this);
+    this.handleSwipe = this.handleSwipe.bind(this);
+    this.lastValidInputPosition = 0;
+    this.handleScroll = this.handleScroll.bind(this);
+    this.handleInputRef = this.handleInputRef.bind(this);
 
     const { userTraits } = props;
     this.state = {
       formInvalid: false,
       personalizationTrait: this.loadPersonalizationTrait(userTraits),
-      errorMessage: '',
       userSkills: [],
       selectedSkill: {},
       newSkill: {
@@ -86,7 +93,11 @@ export default class Skills extends ConsentComponent {
       pageSize: 6,
       totalPage: 0,
       isMobileView: false,
-      screenSM: 768,
+      screenSM: 767,
+      deleteSkill: null,
+      deleteSelector: null,
+      showConfirmation: false,
+      inputChanged: false,
     };
   }
 
@@ -97,6 +108,13 @@ export default class Skills extends ConsentComponent {
   componentDidMount() {
     this.updatePredicate();
     window.addEventListener('resize', this.updatePredicate);
+    if (this.isIos()) {
+      window.addEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate() {
+    this.removeHover();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -104,7 +122,6 @@ export default class Skills extends ConsentComponent {
     this.setState({
       personalizationTrait,
       formInvalid: false,
-      errorMessage: '',
       userSkills: [],
       selectedSkill: {},
       newSkill: {
@@ -121,6 +138,9 @@ export default class Skills extends ConsentComponent {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updatePredicate);
+    if (this.isIos()) {
+      window.removeEventListener('scroll', this.handleScroll);
+    }
   }
 
   /**
@@ -129,17 +149,16 @@ export default class Skills extends ConsentComponent {
    */
   onHandleAddSkill(e) {
     e.preventDefault();
+    this.setState({ inputChanged: true });
     const { selectedSkill } = this.state;
     if (!selectedSkill.name) {
       this.setState({
-        errorMessage: 'Skill can not be empty',
         formInvalid: true,
       });
       return;
     }
 
     this.setState({
-      errorMessage: '',
       formInvalid: false,
     });
     this.showConsent(this.onAddSkill.bind(this));
@@ -153,6 +172,7 @@ export default class Skills extends ConsentComponent {
     if (option) {
       this.setState({
         selectedSkill: option,
+        inputChanged: true,
       });
     }
   }
@@ -171,15 +191,14 @@ export default class Skills extends ConsentComponent {
 
     if (!selectedSkill.name) {
       this.setState({
-        errorMessage: 'Skill can not be empty',
         formInvalid: true,
       });
       return;
     }
 
     this.setState({
-      errorMessage: '',
       formInvalid: false,
+      inputChanged: false,
     });
 
     let category = '';
@@ -200,7 +219,6 @@ export default class Skills extends ConsentComponent {
     ));
 
     if (index > -1) {
-      toastr.info('', `You've already added skill "${selectedSkill.name}".`);
       return;
     }
 
@@ -227,6 +245,40 @@ export default class Skills extends ConsentComponent {
     this.setState({
       indexList: userSkills.slice(index * pageSize, index * pageSize + pageSize),
       currentIndex: index,
+    });
+  }
+
+  /*
+    handle swipe in the skills section on mobile
+   */
+  handleSwipe(direction) {
+    const { isMobileView, totalPage, currentIndex } = this.state;
+
+    if (isMobileView) {
+      switch (direction) {
+        case 'right':
+          if (currentIndex > 0) {
+            this.setPage(currentIndex - 1);
+          }
+          break;
+
+        case 'left':
+          if (currentIndex < totalPage - 1) {
+            this.setPage(currentIndex + 1);
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  onHandleDeleteSkill(skill, selector) {
+    this.setState({
+      showConfirmation: true,
+      deleteSkill: skill,
+      deleteSelector: selector,
     });
   }
 
@@ -263,6 +315,7 @@ export default class Skills extends ConsentComponent {
           skill.id === arraySkill[i].tagId
         ));
         if (result && result.length > 0) {
+          result[0].sources = arraySkill[i].sources;
           filterUserSkills.push(result[0]);
           if (_.some(result[0].categories, category => category.toLowerCase() === 'design')) {
             design.push(result[0].name);
@@ -296,10 +349,35 @@ export default class Skills extends ConsentComponent {
     }
   }
 
+  isIos = () => (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream);
+
+
+  removeHover = () => {
+    setTimeout(() => {
+      const btn = document.querySelector('a:hover');
+      if (btn && this.selectedElement !== btn) {
+        const par = btn.parentNode;
+        const next = btn.nextSibling;
+        par.removeChild(btn);
+        setTimeout(() => { par.insertBefore(btn, next); }, 0);
+      }
+      if (!btn) {
+        this.selectedElement = null;
+      }
+    }, 100);
+  }
+
   /**
    * Toggle Skill to delete selected skill
    */
-  toggleSkill = (e, skill) => {
+  toggleSkill = (e, skill, selector) => {
+    const skillElement = document.querySelector(selector);
+    if (this.selectedElement !== skillElement && this.isIos()) {
+      this.selectedElement = skillElement;
+      return;
+    }
+    this.selectedElement = skillElement;
+
     e.preventDefault();
     const { newSkill } = this.state;
     const {
@@ -324,11 +402,38 @@ export default class Skills extends ConsentComponent {
     ));
     newSkill[category] = result.length > 0 ? result.slice() : [];
     deleteUserSkill(handle, skill, tokenV3);
+    this.setState({
+      deleteSkill: null,
+      deleteSelector: null,
+      showConfirmation: false,
+      inputChanged: false,
+    });
   };
 
   updatePredicate() {
     const { screenSM } = this.state;
     this.setState({ isMobileView: window.innerWidth <= screenSM });
+  }
+
+  handleScroll() {
+    if (this.lastValidInputPosition === 0) {
+      this.lastValidInputPosition = window.scrollY;
+    }
+  }
+
+  handleInputRef(ref) {
+    if (!this.isIos()) {
+      return;
+    }
+    this.inputRef = ref;
+    const keyPress = () => {
+      window.scroll(0, this.lastValidInputPosition);
+    };
+    this.inputRef.control.onkeydown = keyPress;
+    const input = this.inputRef.control.getElementsByTagName('input');
+    input[0].onfocus = () => {
+      this.lastValidInputPosition = 0;
+    };
   }
 
   render() {
@@ -339,32 +444,54 @@ export default class Skills extends ConsentComponent {
 
     const {
       userSkills,
-      formInvalid,
-      errorMessage,
       selectedSkill,
       currentIndex,
       isMobileView,
       totalPage,
       indexList,
+      showConfirmation,
+      deleteSkill,
+      deleteSelector,
+      inputChanged,
+      formInvalid,
     } = this.state;
 
+    const canModifyTrait = !this.props.traitRequestCount;
     const tabs = settingsUI.TABS.PROFILE;
     const currentTab = settingsUI.currentProfileTab;
     const containerStyle = currentTab === tabs.SKILL ? '' : 'hide';
     // All lookup skills
-    const lookupSkills = lookupData.skillTags ? _.sortBy(lookupData.skillTags, s => s.name) : [];
+    const allSkills = lookupData.skillTags ? lookupData.skillTags : [];
     const buttons = userSkills.slice(0, totalPage);
-    const list = isMobileView ? indexList : userSkills;
+    let list = isMobileView ? indexList : userSkills;
+    list = _.orderBy(list, [skill => skill.name.toLowerCase()], ['asc']); // Use Lodash to sort array by 'name'
+
+    // filter out already added skills
+    const lookupSkills = _.sortBy(
+      _.filter(allSkills, skill => _.findIndex(userSkills, l => l.id === skill.id) === -1),
+      s => s.name,
+    );
 
     return (
       <div styleName={containerStyle}>
         {
           this.shouldRenderConsent() && this.renderConsent()
         }
+        {
+          showConfirmation && (
+            <ConfirmationModal
+              onConfirm={() => this.showConsent(this.toggleSkill
+                .bind(this, deleteSkill, deleteSelector))}
+              onCancel={() => this.setState({
+                showConfirmation: false,
+                deleteSkill: null,
+                deleteSelector: null,
+              })}
+              name={deleteSelector.name}
+            />
+          )
+        }
         <div styleName={`skill-container ${list.length > 0 ? '' : 'no-skills'}`}>
-          <div styleName={`error-message ${formInvalid ? 'active' : ''}`}>
-            { errorMessage }
-          </div>
           <h1>
             Skill
           </h1>
@@ -372,50 +499,80 @@ export default class Skills extends ConsentComponent {
             Your skills
           </div>
           <div styleName={`skill-list ${list.length > 0 ? '' : 'hide'}`}>
-            <ul>
-              {
-                _.map(list, (skill) => {
-                  let linkStyle = '';
-                  if (skill.hidden) {
-                    linkStyle = 'skill-hidden';
-                  }
-                  if (skill.isNew) {
-                    linkStyle += ' new';
-                  }
+            <ReactTouchEvents
+              onSwipe={this.handleSwipe}
+            >
+              <ul>
+                {
+                  _.map(list, (skill) => {
+                    let linkStyle = '';
+                    if (skill.hidden) {
+                      linkStyle = 'skill-hidden';
+                    }
+                    if (skill.isNew) {
+                      linkStyle += ' new';
+                    }
 
-                  let FallbackIcon;
-                  const category = skill.categories.length > 0 ? skill.categories[0].toUpperCase() : '';
-                  switch (category) {
-                    case 'DATA_SCIENCE':
-                      FallbackIcon = DataFallbackIcon;
-                      break;
-                    case 'DESIGN':
-                      FallbackIcon = DesignFallbackIcon;
-                      break;
-                    default:
-                      FallbackIcon = DevFallbackIcon;
-                      break;
-                  }
+                    let FallbackIcon;
+                    const category = skill.categories.length > 0 ? skill.categories[0].toUpperCase() : '';
+                    switch (category) {
+                      case 'DATA_SCIENCE':
+                        FallbackIcon = DataFallbackIcon;
+                        break;
+                      case 'DESIGN':
+                        FallbackIcon = DesignFallbackIcon;
+                        break;
+                      default:
+                        FallbackIcon = DevFallbackIcon;
+                        break;
+                    }
 
-                  return (
-                    <li key={skill.id}>
-                      <div styleName="skill-tile">
-                        <a role="link" onClick={e => this.toggleSkill(e, skill)} styleName={linkStyle}>
-                          <div styleName="skill-icon">
-                            <div styleName="remove-indicator" />
-                            <div styleName="hidden-indicator" />
-                            { imageExist(`id-${skill.id}.svg`) ? getImage(`id-${skill.id}.svg`) : <FallbackIcon /> }
+                    return (
+                      <li key={skill.id}>
+                        <div styleName="skill-tile">
+                          <a
+                            id={`skill-a-${skill.id}`}
+                            role="link"
+                            onClick={e => this.onHandleDeleteSkill(e, skill, `#skill-a-${skill.id}`)}
+                            styleName={linkStyle}
+                          >
+                            <div styleName="skill-icon">
+                              <div styleName="remove-indicator" />
+                              <div styleName="hidden-indicator" />
+                              { imageExist(`id-${skill.id}.svg`) ? getImage(`id-${skill.id}.svg`) : <FallbackIcon /> }
+                            </div>
+                          </a>
+                          <div styleName="name-wrapper">
+                            <div styleName="name">
+                              {_.truncate(skill.name, { length: 18, separator: ' ' })}
+                            </div>
+                            {_.includes(skill.sources, 'CHALLENGE') && <div styleName="verified-badge"><VerifiedBadgeIcon /></div> }
                           </div>
-                          <div styleName="name">
-                            {_.truncate(skill.name, { length: 18, separator: ' ' })}
-                          </div>
-                        </a>
-                      </div>
-                    </li>
-                  );
-                })
-              }
-            </ul>
+                        </div>
+                      </li>
+                    );
+                  })
+                }
+              </ul>
+            </ReactTouchEvents>
+            {
+              isMobileView && (
+                <div styleName={`mobile-buttons ${list.length > 0 ? '' : 'hide'}`}>
+                  {
+                    buttons.map((item, index) => (
+                      <span
+                        tabIndex="0"
+                        key={item.id}
+                        onClick={() => this.setPage(index)}
+                        onKeyPress={() => this.setPage(index)}
+                        role="button"
+                        styleName={`mobile-button ${currentIndex === index ? 'mobile-active' : ''}`}
+                      />
+                    ))
+                  }
+                </div>
+              )
+            }
           </div>
           <div styleName={`sub-title ${list.length > 0 ? 'second' : 'first'}`}>
             Add a new skill
@@ -426,22 +583,26 @@ export default class Skills extends ConsentComponent {
                 <div styleName="field col-1">
                   <label htmlFor="skill">
                     Skill
+                    <input type="hidden" />
                   </label>
                 </div>
                 <div styleName="field col-2">
                   <span styleName="text-required">* Required</span>
                   <Select
+                    selectRef={this.handleInputRef}
                     name="skills"
                     options={lookupSkills}
                     onChange={this.onUpdateSelect}
                     placeholder="Start typing a skill then select from the list"
-                    matchPos="start"
+                    matchPos="any"
                     matchProp="name"
                     labelKey="name"
                     valueKey="name"
                     clearable={false}
                     value={selectedSkill.name}
+                    disabled={!canModifyTrait}
                   />
+                  <ErrorMessage invalid={_.isEmpty(selectedSkill.name) && formInvalid} addMargin message="Skill cannot be empty" />
                 </div>
               </div>
             </form>
@@ -449,6 +610,7 @@ export default class Skills extends ConsentComponent {
               <PrimaryButton
                 styleName="complete"
                 onClick={this.onHandleAddSkill}
+                disabled={!canModifyTrait}
               >
                 Add skill to your list
               </PrimaryButton>
@@ -465,19 +627,24 @@ export default class Skills extends ConsentComponent {
                 <div styleName="field">
                   <label htmlFor="skills">
                     Skill
+                    <span styleName="text-required">* Required</span>
+                    <input type="hidden" />
                   </label>
                   <Select
+                    selectRef={this.handleInputRef}
                     name="skills"
                     options={lookupSkills}
                     onChange={this.onUpdateSelect}
                     placeholder="Start typing a skill then select from the list"
-                    matchPos="start"
+                    matchPos="any"
                     matchProp="name"
                     labelKey="name"
                     valueKey="name"
                     clearable={false}
                     value={selectedSkill.name}
+                    disabled={!canModifyTrait}
                   />
+                  <ErrorMessage invalid={_.isEmpty(selectedSkill.name) && inputChanged} addMargin message="Skill cannot be empty" />
                 </div>
               </div>
             </form>
@@ -485,29 +652,12 @@ export default class Skills extends ConsentComponent {
               <PrimaryButton
                 styleName="complete"
                 onClick={this.onHandleAddSkill}
+                disabled={!canModifyTrait}
               >
                 Add Skill
               </PrimaryButton>
             </div>
           </div>
-          {
-            isMobileView && (
-              <div styleName={`mobile-buttons ${list.length > 0 ? '' : 'hide'}`}>
-                {
-                  buttons.map((item, index) => (
-                    <span
-                      tabIndex="0"
-                      key={item.id}
-                      onClick={() => this.setPage(index)}
-                      onKeyPress={() => this.setPage(index)}
-                      role="button"
-                      styleName={`mobile-button ${currentIndex === index ? 'mobile-active' : ''}`}
-                    />
-                  ))
-                }
-              </div>
-            )
-          }
         </div>
       </div>
     );
@@ -529,4 +679,5 @@ Skills.propTypes = {
   /* eslint-disable react/no-unused-prop-types */
   settingsUI: PT.shape().isRequired,
   userTraits: PT.array.isRequired,
+  traitRequestCount: PT.number.isRequired,
 };

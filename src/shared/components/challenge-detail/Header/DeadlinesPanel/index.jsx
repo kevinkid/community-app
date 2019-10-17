@@ -16,7 +16,7 @@ export default function DeadlinesPanel({ deadlines }) {
   const started = moment(start).isBefore(moment());
 
   return (
-    <div styleName="panel">
+    <div styleName="panel" tabIndex="0" role="tabpanel">
       <p styleName="timezone">
 Timezone:
         {moment.tz.guess()}
@@ -28,7 +28,7 @@ Timezone:
       />
       { deadlines.map((d, index) => (
         <Card
-          key={d.id}
+          key={d.phaseType}
           time={d.actualEndTime || d.scheduledEndTime}
           title={index === deadlines.length - 1 ? 'Winners' : d.phaseType}
         />

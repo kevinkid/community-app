@@ -62,8 +62,8 @@ class ProfileStats extends React.Component {
     }
 
     const subTrackStats = getSubTrackStats(stats, track, subTrack);
-    const subTrackSummary = getSummary(stats, track, subTrack);
-    const subTrackDetails = getDetails(stats, track, subTrack);
+    const subTrackSummary = getSummary(stats, track, subTrack) || [];
+    const subTrackDetails = getDetails(stats, track, subTrack) || [];
 
     if (track === 'DEVELOP') {
       const reliability = subTrackSummary.find(stat => stat.label === 'reliability');
@@ -80,7 +80,7 @@ class ProfileStats extends React.Component {
     }
 
     return (
-      <div styleName="profile-subtrack-container">
+      <div styleName="profile-subtrack-container" role="main">
         <div styleName="content">
           <div styleName="page-state-header">
             <header>
@@ -123,7 +123,8 @@ Active Challenges
                     >
                       {tab}
                     </Link>
-                  </li>))
+                  </li>
+                ))
               }
             </ul>
             <ul styleName="subtrack-stats">
@@ -186,7 +187,13 @@ Active Challenges
                     </div>
                     {
                       activeGraph === 'history'
-                        ? <HistoryGraph history={getHistory(statsHistory, track, subTrack)} />
+                        ? (
+                          <HistoryGraph
+                            history={getHistory(statsHistory, track, subTrack)}
+                            track={track}
+                            subTrack={subTrack}
+                          />
+                        )
                         : (
                           <DistributionGraph
                             distribution={statsDistribution}

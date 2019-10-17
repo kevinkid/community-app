@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
 
-  @include xs-to-sm {
+  @include upto-sm {
     padding: 20px;
     border-bottom: 1px solid $tc-gray-10;
   }
@@ -18,7 +18,7 @@
     color: $tc-black;
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -46,25 +46,9 @@
       display: none;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
-  }
-}
-
-.error-message {
-  display: none;
-
-  &.active {
-    @include roboto-medium;
-
-    display: block;
-    border-radius: 5px;
-    background-color: $tc-red-10;
-    color: $tc-red-110;
-    font-size: 15px;
-    padding: 15px;
-    margin-bottom: 15px;
   }
 }
 
@@ -82,6 +66,16 @@
     border: 1px solid $tc-gray-20;
     border-radius: $corner-radius * 2 $corner-radius * 2 $corner-radius * 2 $corner-radius * 2;
     margin-bottom: 0;
+
+    @include placeholder {
+      text-transform: capitalize;
+    }
+  }
+
+  textarea {
+    @include placeholder {
+      text-transform: capitalize;
+    }
   }
 
   .text-required {
@@ -125,18 +119,34 @@
       border-radius: 4px;
       margin-bottom: 10px;
       width: 100%;
+      resize: vertical;
     }
   }
 
   .user-icon {
     width: 100%;
   }
+
+  .row {
+    .col-1 {
+      display: flex;
+      flex-grow: 1;
+      align-items: center;
+      max-width: 0;
+      min-width: 0;
+      margin-right: 0;
+      width: auto;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+    }
+  }
 }
 
 .about-me-container-mobile {
   display: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     display: flex;
     align-items: flex-start;
   }
@@ -146,28 +156,12 @@
   .user-icon {
     margin-right: 40px;
 
-    @include md-to-lg {
+    @include from-sm-to-lg {
       display: none;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
-    }
-  }
-
-  .error-message {
-    display: none;
-
-    &.active {
-      @include roboto-medium;
-
-      display: block;
-      border-radius: 5px;
-      background-color: $tc-red-10;
-      color: $tc-red-110;
-      font-size: 15px;
-      padding: 15px;
-      margin-bottom: 15px;
     }
   }
 
@@ -186,11 +180,11 @@
       color: $tc-black;
       margin-bottom: 20px;
 
-      @include md-to-lg {
+      @include from-sm-to-lg {
         display: none;
       }
 
-      @include xs-to-sm {
+      @include upto-sm {
         display: none;
       }
     }
@@ -199,7 +193,7 @@
       display: flex;
       margin-bottom: 10px;
 
-      @include xs-to-sm {
+      @include upto-sm {
         width: 100%;
         display: block;
         margin-bottom: 0;
@@ -211,8 +205,9 @@
         flex-direction: column;
         margin-right: 10px;
 
-        @include xs-to-sm {
-          display: block;
+        @include upto-sm {
+          display: flex;
+          flex-direction: column;
           margin-right: 0;
           padding-bottom: 10px;
         }
@@ -254,8 +249,18 @@
       color: $tc-black;
       border-radius: $corner-radius * 2 $corner-radius * 2 $corner-radius * 2 $corner-radius * 2;
 
-      @include xs-to-sm {
+      @include upto-sm {
         margin-top: 5px;
+      }
+
+      @include placeholder {
+        text-transform: capitalize;
+      }
+    }
+
+    textarea {
+      @include placeholder {
+        text-transform: capitalize;
       }
     }
 
@@ -266,7 +271,7 @@
     .mb-user-card {
       display: none;
 
-      @include xs-to-sm {
+      @include upto-sm {
         display: block;
         margin-bottom: 15px;
       }
@@ -277,18 +282,18 @@
       flex-direction: row;
       margin-bottom: 10px;
 
-      @include md-to-lg {
+      @include from-sm-to-lg {
         margin-bottom: 15px;
       }
 
-      @include xs-to-sm {
+      @include upto-sm {
         margin-bottom: 0;
       }
 
       .img-container {
         display: none;
 
-        @include md-to-lg {
+        @include from-sm-to-lg {
           display: block;
         }
       }
@@ -297,7 +302,7 @@
         display: block;
         width: 100%;
 
-        @include md-to-lg {
+        @include from-sm-to-lg {
           display: flex;
           flex-direction: column;
         }
@@ -306,7 +311,7 @@
       p.user-handle {
         display: none;
 
-        @include md-to-lg {
+        @include from-sm-to-lg {
           @include roboto-regular;
 
           display: block;
@@ -413,7 +418,7 @@
   color: $tc-gray-80;
   font-size: 15px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 5px;
   }
 }
@@ -423,13 +428,17 @@
 
   div[class="Select-input"] {
     height: 38px;
+
+    @include placeholder {
+      text-transform: capitalize;
+    }
   }
 
   div[class="Select-placeholder"] {
     height: 38px;
     line-height: 40px !important;
 
-    @include xs-to-sm {
+    @include upto-sm {
       line-height: 38px !important;
     }
   }
@@ -443,7 +452,18 @@
   color: $tc-gray-50;
 }
 
-.col-1,
+.date-picker {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+.date-picker-sm {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
 .col-2,
 .col-percent50,
 .col-percent35 {

@@ -114,6 +114,7 @@ SettingsContainer.propTypes = {
   settingsPageState: PT.shape().isRequired,
   lookupData: PT.shape().isRequired,
   loadingError: PT.bool.isRequired,
+  updateEmailConflict: PT.func.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -130,6 +131,7 @@ function mapStateToProps(state) {
     loadingError: state.profile.loadingError,
     settingsUI: state.page.ui.settings,
     settings: state.settings,
+    traitRequestCount: state.settings.traitRequestCount,
     userTraits: state.settings.userTraits,
     skills: state.profile.skills,
   };
@@ -150,6 +152,8 @@ function mapDispatchToProps(dispatch) {
       dispatch(profileActions.getSkillsDone(handle));
       dispatch(lookupActions.getSkillTagsInit());
       dispatch(lookupActions.getSkillTagsDone());
+      dispatch(lookupActions.getCountriesInit());
+      dispatch(lookupActions.getCountriesDone());
     } else if (settingsTab === TABS.PREFERENCES) {
       dispatch(profileActions.getEmailPreferencesDone(profile, tokenV3));
     } else if (settingsTab === TABS.ACCOUNT) {
@@ -163,6 +167,8 @@ function mapDispatchToProps(dispatch) {
     loadTabData,
     selectTab: tab => dispatch(settingsActions.page.settings.selectTab(tab)),
     clearIncorrectPassword: () => dispatch(settingsActions.page.settings.clearIncorrectPassword()),
+    clearToastrNotification:
+    (() => dispatch(settingsActions.page.settings.clearToastrNotification())),
     addWebLink: (handle, tokenV3, webLink) => {
       dispatch(profileActions.addWebLinkInit());
       dispatch(profileActions.addWebLinkDone(handle, tokenV3, webLink));
@@ -170,6 +176,9 @@ function mapDispatchToProps(dispatch) {
     deleteWebLink: (handle, tokenV3, webLink) => {
       dispatch(profileActions.deleteWebLinkInit(webLink));
       dispatch(profileActions.deleteWebLinkDone(handle, tokenV3, webLink));
+    },
+    uploadPhotoInit: () => {
+      dispatch(profileActions.uploadPhotoInit());
     },
     uploadPhoto: (handle, tokenV3, file) => {
       dispatch(profileActions.uploadPhotoInit());
@@ -193,7 +202,6 @@ function mapDispatchToProps(dispatch) {
       dispatch(profileActions.unlinkExternalAccountDone(profile, tokenV3, providerType));
     },
     saveEmailPreferences: (profile, tokenV3, preferences) => {
-      dispatch(profileActions.saveEmailPreferencesInit());
       dispatch(profileActions.saveEmailPreferencesDone(profile, tokenV3, preferences));
     },
     updatePassword: (profile, tokenV3, newPassword, oldPassword) => {
@@ -213,16 +221,19 @@ function mapDispatchToProps(dispatch) {
       dispatch(actions.settings.getAllUserTraits(handle, tokenV3));
     },
     addUserTrait: (handle, traitId, data, tokenV3) => {
-      dispatch(actions.settings.addUserTrait(handle, traitId, data, tokenV3));
+      dispatch(actions.settings.modifyUserTraitInit());
+      return dispatch(actions.settings.addUserTrait(handle, traitId, data, tokenV3));
     },
     addUserSkill: (handle, skill, tokenV3) => {
       dispatch(actions.profile.addSkillInit());
       dispatch(actions.profile.addSkillDone(handle, tokenV3, _.assign(skill, { tagId: skill.id })));
     },
     updateUserTrait: (handle, traitId, data, tokenV3) => {
-      dispatch(actions.settings.updateUserTrait(handle, traitId, data, tokenV3));
+      dispatch(actions.settings.modifyUserTraitInit());
+      return dispatch(actions.settings.updateUserTrait(handle, traitId, data, tokenV3));
     },
     deleteUserTrait: (handle, traitId, tokenV3) => {
+      dispatch(actions.settings.modifyUserTraitInit());
       dispatch(actions.settings.deleteUserTrait(handle, traitId, tokenV3));
     },
     deleteUserSkill: (handle, skill, tokenV3) => {
@@ -230,6 +241,9 @@ function mapDispatchToProps(dispatch) {
       dispatch(
         actions.profile.hideSkillDone(handle, tokenV3, _.assign(skill, { tagId: skill.id })),
       );
+    },
+    updateEmailConflict: (state) => {
+      dispatch(actions.profile.updateEmailConflict(state));
     },
   };
 }

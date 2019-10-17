@@ -1,3 +1,9 @@
+/* eslint-disable */
+/* Datadog debugging */
+import ddTrace from 'dd-trace';
+
+ddTrace.init();
+
 import atob from 'atob';
 import Application from 'shared';
 import config from 'config';
@@ -17,14 +23,18 @@ import { redux, server as serverFactory } from 'topcoder-react-utils';
 import { getRates as getExchangeRates } from 'services/money';
 import { toJson as xmlToJson } from 'utils/xml2json';
 
+import { authMiddleware } from './auth';
 import cdnRouter from './routes/cdn';
 import mailChimpRouter from './routes/mailchimp';
 import mockDocuSignFactory from './__mocks__/docu-sign-mock';
+
+import submissionsRouter from './routes/submissions';
 
 /* Dome API for topcoder communities */
 import tcCommunitiesDemoApi from './tc-communities';
 
 import webpackConfigFactory from '../../webpack.config';
+/* eslint-enable */
 
 global.atob = atob;
 
@@ -34,7 +44,26 @@ let ts = path.resolve(__dirname, '../../.build-info');
 ts = JSON.parse(fs.readFileSync(ts));
 ts = moment(ts.timestamp).valueOf();
 
+const sw = `sw.js${process.env.NODE_ENV === 'production' ? '' : '?debug'}`;
+const swScope = '/challenges'; // we are currently only interested in improving challenges pages
+
 const EXTRA_SCRIPTS = [
+  `<script type="application/javascript">
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('${swScope}/${sw}', {scope: '${swScope}'}).then(
+    (reg)=>{
+      console.log('SW registered: ',reg);
+      reg.onupdatefound = () => {
+        const installingWorker = reg.installing;
+        installingWorker.onstatechange = () => {
+          if (installingWorker.state === 'activated') {
+            location.reload();
+          }
+        };
+      };
+    }).catch((err)=>{console.log('SW registration failed: ',err)})
+  }
+  </script>`,
   `<script
       src="${process.env.CDN_URL || '/api/cdn/public'}/static-assets/loading-indicator-animation-${ts}.js"
       type="application/javascript"
@@ -107,6 +136,7 @@ async function onExpressJsSetup(server) {
 
   server.use('/api/cdn', cdnRouter);
   server.use('/api/mailchimp', mailChimpRouter);
+  server.use('/api/v5/submissions', authMiddleware, submissionsRouter);
 
   // serve demo api
   server.use(
@@ -185,6 +215,21 @@ async function onExpressJsSetup(server) {
    * for static assets. */
   const url = path.resolve(__dirname, '../../build');
   server.use('/community-app-assets', express.static(url));
+
+  /* Serve sw.js */
+  server.use(`${swScope}/sw.js`, (req, res) => {
+    res.set('Service-Worker-Allowed', '/');
+
+    if (`${config.DISABLE_SERVICE_WORKER}`.toLowerCase() === 'true') {
+      res.sendFile(`${url}/noopsw.js`);
+    } else {
+      res.sendFile(`${url}/sw.js`);
+    }
+  });
+  /* Serve manifest.json */
+  server.use(`${swScope}/manifest.json`, (req, res) => {
+    res.sendFile(`${url}/manifest.json`);
+  });
 }
 
 global.KEEP_BUILD_INFO = true;

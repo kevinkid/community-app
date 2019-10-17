@@ -1,4 +1,4 @@
-@import "~styles/mixins";
+@import "../../style";
 
 .links {
   border-bottom: none;
@@ -10,7 +10,7 @@
   justify-content: space-between;
   //margin-top: 10px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     flex-flow: row wrap;
     flex-direction: row;
   }
@@ -25,6 +25,7 @@
     text-align: center;
     margin-bottom: 10px;
     //border-radius: 4px;
+    position: relative;
 
     @include sofia-pro-medium;
 
@@ -43,10 +44,12 @@
 
     i.fa-globe {
       color: #82a0aa;
+      cursor: pointer;
     }
 
     i.fa-weblinks {
       color: #82a0aa;
+      cursor: pointer;
     }
 
     i.fa-bitbucket {
@@ -81,7 +84,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 90px;
+      width: 30%;
       height: 88px;
       background-color: $tc-gray-neutral-light;
       border-radius: 4px 0 0 4px;
@@ -103,7 +106,7 @@
     }
 
     .bottom {
-      width: 220px;
+      width: 70%;
       margin-top: 10px;
 
       .handle {
@@ -111,6 +114,8 @@
 
         font-size: 18px;
         height: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .title {
@@ -187,6 +192,8 @@
         padding: 0 20px;
         text-transform: uppercase;
         color: $tc-dark-blue-110;
+        white-space: nowrap;
+        text-overflow: ellipsis;
 
         &:hover {
           color: $tc-light-blue-110;
@@ -209,10 +216,11 @@
 // Add web link section
 .external-web-link {
   margin-bottom: 30px;
+  width: 100%;
 
   input.url {
     max-width: 100%;
-    margin: 0;
+    margin: 5px 0 0 0;
     border-radius: 4px;
 
     @include placeholder {
@@ -229,7 +237,7 @@
 
   .web-link {
     .form-container-default {
-      @include xs-to-sm {
+      @include upto-sm {
         display: none;
       }
 
@@ -237,6 +245,7 @@
       flex-direction: row;
       min-height: 40px;
       justify-content: space-between;
+      align-items: flex-start;
 
       label {
         @include roboto-bold;
@@ -302,7 +311,7 @@
     .form-container-mobile {
       display: none;
 
-      @include xs-to-sm {
+      @include upto-sm {
         border: 0;
         border-radius: 0;
         display: flex;
@@ -335,7 +344,7 @@
         font-weight: 400;
         color: $tc-black;
 
-        @include xs-to-sm {
+        @include upto-sm {
           margin-bottom: 20px;
         }
       }
@@ -346,7 +355,7 @@
         margin-bottom: 20px;
         align-content: space-between;
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
           display: block;
           margin-bottom: 0;
@@ -357,7 +366,7 @@
           flex-direction: column;
           margin-right: 10px;
 
-          @include xs-to-sm {
+          @include upto-sm {
             display: block;
             padding-bottom: 10px;
           }
@@ -424,7 +433,7 @@
           }
         }
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -454,6 +463,7 @@
       flex-direction: column;
       text-align: center;
       padding: 0;
+      position: relative;
 
       @include sofia-pro-medium;
 
@@ -492,6 +502,8 @@
         .handle {
           margin-top: 20px;
           margin-bottom: 20px;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .title {
@@ -542,6 +554,7 @@
 
         .link-url {
           max-height: 28px;
+          white-space: normal;
         }
       }
     }
@@ -560,7 +573,7 @@
   flex-flow: row wrap;
   border-bottom: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     display: block;
     padding: 0 20px;
   }
@@ -571,6 +584,7 @@
     position: absolute;
     top: -10px;
     right: -15px;
+    z-index: 1;
 
     @media only screen and (min-width: 768px) {
       top: 0;
@@ -643,14 +657,6 @@
       height: 90px;
       border: 1px solid $tc-gray-20;
       border-radius: 6px;
-
-      img {
-        filter: grayscale(0);
-
-        &.unadded {
-          filter: grayscale(1);
-        }
-      }
 
       .provider {
         margin-top: 8px;
@@ -784,6 +790,7 @@
 
     &.disabled {
       cursor: default;
+      opacity: 0.4;
     }
 
     &.enabled.connect:hover {
@@ -794,7 +801,7 @@
     }
   }
 
-  @include xs-to-sm {
+  @include upto-sm {
     padding: 20px;
   }
 }
@@ -823,7 +830,7 @@
     color: $tc-black;
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -838,7 +845,7 @@
     margin-bottom: 30px;
     margin-top: 10px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -847,9 +854,8 @@
 .button-save {
   align-self: center;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 10px;
-    width: 156px;
   }
 
   .complete {
@@ -865,6 +871,37 @@
       margin: 0;
       padding: 0 0;
       width: 200px;
+    }
+  }
+}
+
+.buttons {
+  margin-top: auto;
+  margin-bottom: auto;
+
+  .button-add-link {
+    align-self: center;
+    color: $tc-white;
+    margin: 0;
+
+    div:first-child {
+      margin-top: 0;
+    }
+
+    button,
+    a {
+      @include roboto-medium;
+
+      height: 40px;
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0;
+      padding: 0;
+      width: 155px;
+    }
+
+    @include upto-sm {
+      display: none;
     }
   }
 }

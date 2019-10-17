@@ -11,6 +11,7 @@ import ChallengeListingRegisterToSee from
   'components/tc-communities/communities/blockchain/ChallengeListing/RegisterToSee';
 import ChallengeDetails from 'routes/ChallengeDetails';
 import ChallengeListing from 'routes/Communities/ChallengeListing';
+import ContentfulRoute from 'components/Contentful/Route';
 import Error404 from 'components/Error404';
 import Footer from 'components/tc-communities/Footer2';
 import Header from 'containers/tc-communities/Header';
@@ -89,7 +90,7 @@ export default function Blockchain({ base, member, meta }) {
                   communityId: meta.communityId,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})`}
               />
               <Route
                 component={routeProps => Submission({
@@ -97,7 +98,7 @@ export default function Blockchain({ base, member, meta }) {
                   challengesUrl: `${base}/challenges`,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})/submit`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})/submit`}
               />
               <Route
                 component={TermsDetail}
@@ -110,7 +111,7 @@ export default function Blockchain({ base, member, meta }) {
                   challengesUrl: `${base}/challenges`,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})/my-submissions`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})/my-submissions`}
               />
               <Route
                 component={() => <Leaderboard meta={meta} />}
@@ -134,7 +135,11 @@ export default function Blockchain({ base, member, meta }) {
               <Route
                 component={Home}
                 exact
-                path={`${base}`}
+                path={`${base || '/'}`}
+              />
+              <ContentfulRoute
+                baseUrl={base}
+                id="2QScQYvwnuS8eCIkoue4qI"
               />
             </Switch>
             <Footer />

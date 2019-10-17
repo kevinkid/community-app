@@ -16,14 +16,19 @@ $podium-border-color: #ededf2;
   }
 
   .ranking {
-    @include roboto-bold;
+    @include roboto-black;
 
     border-radius: 20px;
-    padding: 2px 10px;
+    padding: 3px 9px;
     display: inline-block;
     position: absolute;
     right: 0;
     bottom: 10px;
+    font-size: 15px;
+  }
+
+  .winnings-info span {
+    display: block;
   }
 
   .winnings-info {
@@ -41,11 +46,21 @@ $podium-border-color: #ededf2;
       font-weight: 400;
       line-height: 25px;
 
+      .value-title {
+        font-size: 20px;
+        line-height: 25px;
+      }
+
       .value {
         color: #47474f;
         font-size: 20px;
         font-weight: 500;
         line-height: 25px;
+      }
+
+      span {
+        font-size: 16px !important;
+        line-height: 25px !important;
       }
     }
 
@@ -58,22 +73,27 @@ $podium-border-color: #ededf2;
     }
   }
 
-  .winnings-info span {
+  a.profile-link {
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  .handle-link,
   a.profile-link {
     @include roboto-bold;
 
-    display: block;
-    overflow: hidden;
+    color: #0d61bf;
     font-size: 20px;
-    text-overflow: ellipsis;
-    color: #006dea;
+    line-height: 30px;
 
     &:hover {
-      color: #006dea;
+      color: #0d61bf;
     }
+  }
+
+  .handle-link:hover {
+    cursor: pointer;
   }
 }
 

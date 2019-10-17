@@ -11,10 +11,55 @@ import React from 'react';
 import MarkdownIt from 'markdown-it';
 import { Button, PrimaryButton, SecondaryButton } from 'topcoder-react-ui-kit';
 import { Link } from 'topcoder-react-utils';
+import hljs from 'highlight.js';
+import ReactHtmlParser from 'react-html-parser';
+import 'highlight.js/styles/github.css';
 
 import JoinCommunity from 'containers/tc-communities/JoinCommunity';
 import NewsletterSignup from 'components/NewsletterSignup';
+import NewsletterSignupForMembers from 'containers/NewsletterSignupForMembers';
 import VideoModalButton from 'components/VideoModalButton';
+import Looker from 'containers/Looker';
+import AnchorLink from 'react-anchor-link-smooth-scroll';
+import Modal from 'components/Contentful/Modal';
+import NewsletterArchive from 'containers/NewsletterArchive';
+
+import tco19SecLg from 'components/buttons/outline/tco/tco19-sec-lg.scss';
+import tco19Lg from 'components/buttons/outline/tco/tco19-lg.scss';
+import tco19Sec from 'components/buttons/outline/tco/tco19-sec.scss';
+import tco19 from 'components/buttons/outline/tco/tco19.scss';
+import tco18 from 'components/buttons/outline/tco/tco18.scss';
+import tco16 from 'components/buttons/outline/tco/tco16.scss';
+import tco14 from 'components/buttons/outline/tco/tco14.scss';
+import tco13 from 'components/buttons/outline/tco/tco13.scss';
+import tco12 from 'components/buttons/outline/tco/tco12.scss';
+import tco11 from 'components/buttons/outline/tco/tco11.scss';
+import tco10 from 'components/buttons/outline/tco/tco10.scss';
+import tco09 from 'components/buttons/outline/tco/tco09.scss';
+import tco07 from 'components/buttons/outline/tco/tco07.scss';
+
+/**
+ * Themes of legacy TCO buttons
+ * those overwrite PrimaryButton stylwe to match legacy TCO styles
+ * Should implement `.tcoButton` class
+*/
+const tcoButtonThemes = {
+  'tco19-sec': tco19Sec,
+  'tco19-sec-lg': tco19SecLg,
+  tco19,
+  'tco19-lg': tco19Lg,
+  tco18, // default
+  tco17: tco18,
+  tco16,
+  tco15: tco16,
+  tco14,
+  tco13,
+  tco12,
+  tco11,
+  tco10,
+  tco09,
+  tco07,
+};
 
 /**
  * Add new Custom Components here.
@@ -37,6 +82,25 @@ const customComponents = {
   JoinCommunity: attrs => ({ type: JoinCommunity, props: attrs }),
   VideoModalButton: attrs => ({ type: VideoModalButton, props: attrs }),
   NewsletterSignup: attrs => ({ type: NewsletterSignup, props: attrs }),
+  NewsletterSignupForMembers: attrs => ({ type: NewsletterSignupForMembers, props: attrs }),
+  Looker: attrs => ({ type: Looker, props: attrs }),
+  AnchorLink: attrs => ({ type: AnchorLink, props: attrs }),
+  TCOButton: attrs => ({
+    type: PrimaryButton,
+    props: {
+      ...attrs,
+      theme: {
+        button: tcoButtonThemes[attrs.theme]
+          ? tcoButtonThemes[attrs.theme].tcoButton
+          : tcoButtonThemes.tco18.tcoButton,
+        disabled: (tcoButtonThemes[attrs.theme] && tcoButtonThemes[attrs.theme].tcoButtonDisabled)
+          ? tcoButtonThemes[attrs.theme].tcoButtonDisabled
+          : '',
+      },
+    },
+  }),
+  Modal: attrs => ({ type: Modal, props: attrs }),
+  NewsletterArchive: attrs => ({ type: NewsletterArchive, props: attrs }),
 };
 
 /**
@@ -77,7 +141,7 @@ function getProps(token, key) {
  * @param {Number} index
  * @return {Object}
  */
-function renderToken(tokens, index) {
+function renderToken(tokens, index, md) {
   const token = tokens[index];
   switch (token.type) {
     case 'image': {
@@ -87,10 +151,30 @@ function renderToken(tokens, index) {
     }
     case 'inline':
       /* eslint-disable no-use-before-define */
-      return renderTokens(token.children, 0);
+      return renderTokens(token.children, 0, md);
       /* eslint-enable no-use-before-define */
     case 'text':
       return token.content;
+    case 'fence':
+      if (token.info && hljs.getLanguage(token.info)) {
+        try {
+          return ReactHtmlParser(`<pre class="hljs"><code>${hljs.highlight(token.info, token.content, true).value}</code></pre>`);
+        } catch (__) { return _.noop(); }
+      } else {
+        try {
+          return ReactHtmlParser(`<pre class="hljs"><code>${hljs.highlightAuto(token.content).value}</code></pre>`);
+        } catch (__) { return _.noop(); }
+      }
+    case 'code_inline':
+      if (token.info && hljs.getLanguage(token.info)) {
+        try {
+          return ReactHtmlParser(`<code>${hljs.highlight(token.info, token.content, true).value}</code>`);
+        } catch (__) { return _.noop(); }
+      } else {
+        try {
+          return ReactHtmlParser(`<code>${hljs.highlightAuto(token.content).value}</code>`);
+        } catch (__) { return _.noop(); }
+      }
     default:
       return React.createElement(
         token.tag,
@@ -109,7 +193,7 @@ function renderToken(tokens, index) {
  */
 // Array destructuring is not appropriate for this use case
 /* eslint-disable prefer-destructuring */
-function renderTokens(tokens, startFrom) {
+function renderTokens(tokens, startFrom, md) {
   let level = 0;
   const output = [];
   for (let pos = startFrom; pos < tokens.length; pos += 1) {
@@ -123,7 +207,7 @@ function renderTokens(tokens, startFrom) {
         output.push(React.createElement(
           token.tag,
           getProps(token, pos),
-          renderTokens(tokens, 1 + pos),
+          renderTokens(tokens, 1 + pos, md),
         ));
         level += 1;
       } else if (token.type === 'html_inline') {
@@ -137,7 +221,7 @@ function renderTokens(tokens, startFrom) {
           }));
           const selfClosing = match[3] || tag === 'img' || tag === 'hr' || tag === 'br';
           if (customComponents[tag]) {
-            ({ type: tag, props } = customComponents[tag](props));
+            ({ type: tag, props } = customComponents[tag]({ ...props, ...md.props }));
           }
           props = normalizeProps(props);
           if (selfClosing) {
@@ -147,11 +231,11 @@ function renderTokens(tokens, startFrom) {
             output.push(React.createElement(
               tag,
               { key: pos, ...props },
-              renderTokens(tokens, pos + 1),
+              renderTokens(tokens, pos + 1, md),
             ));
           }
         }
-      } else output.push(renderToken(tokens, pos));
+      } else output.push(renderToken(tokens, pos, md));
     } else if (token.nesting === 1) {
       level += 1;
     } else if (html) {
@@ -170,8 +254,9 @@ const md = new MarkdownIt({ html: true });
 md.block.ruler.disable('html_block');
 
 // Assign the custom renderer
-md.renderer.render = tokens => renderTokens(tokens, 0);
+md.renderer.render = tokens => renderTokens(tokens, 0, md);
 
-export default function render(text) {
+export default function render(text, props) {
+  md.props = props;
   return md.render(text);
 }

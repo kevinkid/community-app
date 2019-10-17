@@ -4,8 +4,9 @@
 
 import _ from 'lodash';
 import Accordion from 'components/Contentful/Accordion';
+import ArticleCard from 'components/Contentful/ArticleCard';
 import Banner from 'components/Contentful/Banner';
-import ChallengesBlock from 'containers/ChallengesBlock';
+import ChallengesBlock from 'containers/Contentful/ChallengesBlock';
 import ContentBlock from 'components/Contentful/ContentBlock';
 import BlogPost from 'components/Contentful/BlogPost';
 import ContentfulLoader from 'containers/ContentfulLoader';
@@ -13,6 +14,7 @@ import { fixStyle } from 'utils/contentful';
 import Quote from 'components/Contentful/Quote';
 import Video from 'components/Contentful/Video';
 import Menu from 'components/Contentful/Menu';
+import BlogFeed from 'containers/Contentful/BlogFeed';
 import { errors } from 'topcoder-react-lib';
 import LoadingIndicator from 'components/LoadingIndicator';
 import PT from 'prop-types';
@@ -21,20 +23,28 @@ import Countdown from 'components/Contentful/Countdown';
 import Tabs from 'components/Contentful/Tabs';
 import AppComponentLoader from 'components/Contentful/AppComponent';
 import ContentSlider from 'components/Contentful/ContentSlider';
+import Image from 'components/Contentful/Image';
+import Shape from 'components/Contentful/Shape';
+import Dropdown from 'components/Contentful/Dropdown';
+import MemberCard from 'components/Contentful/MemberCard';
+import Article from 'components/Contentful/Article';
 
 import Viewport from './Viewport';
 
 import columnTheme from './themes/column.scss';
 import rowTheme from './themes/row.scss';
 import gridTheme from './themes/grid.scss';
+import zurichTheme from './themes/zurich.scss';
 
 const { fireErrorMessage } = errors;
 
 const COMPONENTS = {
   accordion: Accordion,
+  articleCard: ArticleCard,
   appComponent: AppComponentLoader,
   banner: Banner,
   blogPost: BlogPost,
+  blogFeed: BlogFeed,
   challengesBlock: ChallengesBlock,
   contentBlock: ContentBlock,
   countdown: Countdown,
@@ -44,12 +54,18 @@ const COMPONENTS = {
   video: Video,
   viewport: null, /* Assigned to ViewportLoader below. */
   contentSlider: ContentSlider,
+  dropdown: Dropdown,
+  memberCard: MemberCard,
+  image: Image,
+  shape: Shape,
+  article: Article,
 };
 
 const THEMES = {
   Column: columnTheme,
   'Row with Max-Width': rowTheme,
   Grid: gridTheme,
+  Zurich: zurichTheme,
 };
 
 /* Loads viewport content assets. */
@@ -62,6 +78,7 @@ function ViewportContentLoader(props) {
     themeName,
     grid,
     baseUrl,
+    viewportId,
   } = props;
   let {
     extraStylesForContainer,
@@ -74,7 +91,7 @@ function ViewportContentLoader(props) {
   }
 
   if (themeName === 'Grid') {
-    extraStylesForContainer = _.assign(extraStylesForContainer || {}, {
+    extraStylesForContainer = _.defaults(extraStylesForContainer || {}, {
       'grid-template-columns': `repeat(${grid.columns || 3}, 1fr)`,
       'grid-gap': `${grid.gap || 10}px`,
     });
@@ -88,6 +105,7 @@ function ViewportContentLoader(props) {
       environment={environment}
       render={data => (
         <Viewport
+          viewportId={viewportId}
           extraStylesForContainer={fixStyle(extraStylesForContainer)}
           theme={theme}
         >
@@ -122,6 +140,7 @@ function ViewportContentLoader(props) {
 
 ViewportContentLoader.defaultProps = {
   extraStylesForContainer: null,
+  preview: false,
   spaceName: null,
   environment: null,
   themeName: 'Column',
@@ -132,9 +151,10 @@ ViewportContentLoader.defaultProps = {
 };
 
 ViewportContentLoader.propTypes = {
+  viewportId: PT.string.isRequired,
   contentIds: PT.arrayOf(PT.string.isRequired).isRequired,
   extraStylesForContainer: PT.shape(),
-  preview: PT.bool.isRequired,
+  preview: PT.bool,
   spaceName: PT.string,
   environment: PT.string,
   themeName: PT.string,
@@ -172,6 +192,7 @@ function ViewportLoader(props) {
       render={data => _.map(data.entries.items, viewport => (
         <ViewportContentLoader
           {...props}
+          viewportId={viewport.sys.id}
           contentIds={_.map(viewport.fields.content, 'sys.id')}
           extraStylesForContainer={viewport.fields.extraStylesForContainer}
           key={viewport.sys.id}

@@ -16,6 +16,11 @@
  *      - user.handle: String, required. User handle
  *      - challenge.count: Number, required. The number of challenge the user won
  *      - project_result.final_score: Number, required. The user's current score
+ *   - isCopilot: Copilot leaderboards have special fields. This flag controlls
+ *     if those should be displayed
+ *   - onUsernameClick: Function if provided it is invoked with the clicked competitor
+ *     instead of linking to member's profile
+ *   - isTopGear: Topgear leaderboards have special fileds
  */
 
 import React from 'react';
@@ -26,10 +31,21 @@ import { config } from 'topcoder-react-utils';
 import avatarStyles from '../avatarStyles.scss';
 import styles from './styles.scss'; // eslint-disable-line
 
+/**
+ * Format points number
+ * @param {Number} points points number
+ */
+const formatPoints = points => parseFloat(Math.round(points * 100) / 100).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 export default function LeaderboardTable(props) {
   const {
     competitors,
     isCopilot,
+    onUsernameClick,
+    isTopGear,
+    isAlgo,
   } = props;
   const renderTableRows = comps => (
     comps.map((competitor) => {
@@ -52,7 +68,20 @@ export default function LeaderboardTable(props) {
             </span>
           </td>
           <td styleName="styles.col-handle">
-            <a href={`${config.URL.BASE}/members/${competitor.handle}/`}>{competitor.handle}</a>
+            {
+              onUsernameClick ? (
+                <div
+                  styleName="styles.handle-link"
+                  onClick={() => onUsernameClick(competitor)}
+                >
+                  {competitor.handle}
+                </div>
+              ) : (
+                <a href={`${config.URL.BASE}/members/${competitor.handle}/`}>
+                  {competitor.handle}
+                </a>
+              )
+            }
             <div styleName="styles.winnings-info">
               {competitor.fulfillment && (<span>{competitor.fulfillment} fulfillment</span>)}
               <span>{competitor.points} points</span>
@@ -65,7 +94,22 @@ export default function LeaderboardTable(props) {
             ) : null
           }
           <td styleName="styles.col-challenges">{competitor.challengecount}</td>
-          <td styleName="styles.col-points">{competitor.points}</td>
+          <td styleName="styles.col-points">{formatPoints(competitor.points)}</td>
+          {
+            isTopGear ? (
+              <td styleName="styles.col-points">{competitor.wins}</td>
+            ) : null
+          }
+          {
+            isTopGear ? (
+              <td styleName="styles.col-points">{competitor.total_earnings}</td>
+            ) : null
+          }
+          {
+            isAlgo ? (
+              <td styleName="styles.col-points">{competitor['srm_tco19.score']}</td>
+            ) : null
+          }
         </tr>
       );
     })
@@ -76,7 +120,8 @@ export default function LeaderboardTable(props) {
       <thead>
         <tr>
           <th styleName="styles.col-rank">Rank</th>
-          <th styleName="styles.col-handle" colSpan="2">Handle</th>
+          <th>Handle</th>
+          <th styleName="styles.col-handle" />
           {
             isCopilot ? (
               <th styleName="styles.col-fulfillment">Fulfillment</th>
@@ -84,6 +129,21 @@ export default function LeaderboardTable(props) {
           }
           <th styleName="styles.col-challenges"># of Challenges</th>
           <th styleName="styles.col-points">Points</th>
+          {
+            isTopGear ? (
+              <th styleName="styles.col-points">Wins</th>
+            ) : null
+          }
+          {
+            isTopGear ? (
+              <th styleName="styles.col-points">Total Earnings</th>
+            ) : null
+          }
+          {
+            isAlgo ? (
+              <th styleName="styles.col-points">Total Score</th>
+            ) : null
+          }
         </tr>
       </thead>
       <tbody>
@@ -93,6 +153,8 @@ export default function LeaderboardTable(props) {
   );
 }
 
+/* eslint-enable jsx-a11y/click-events-have-key-events */
+/* eslint-enable jsx-a11y/no-static-element-interactions */
 const CompetitorShape = PT.shape({
   rank: PT.number.isRequired,
   avatar: PT.string,
@@ -105,8 +167,14 @@ const CompetitorShape = PT.shape({
 LeaderboardTable.propTypes = {
   competitors: PT.arrayOf(CompetitorShape).isRequired,
   isCopilot: PT.bool,
+  onUsernameClick: PT.func,
+  isTopGear: PT.bool,
+  isAlgo: PT.bool,
 };
 
 LeaderboardTable.defaultProps = {
   isCopilot: false,
+  onUsernameClick: null,
+  isTopGear: false,
+  isAlgo: false,
 };

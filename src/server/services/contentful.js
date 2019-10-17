@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /**
  * Server-side functions necessary for effective integration with Contentful
  * CMS.
@@ -9,6 +10,8 @@ import fetch from 'isomorphic-fetch';
 // import logger from 'utils/logger';
 // import moment from 'moment';
 import qs from 'qs';
+
+const contentful = require('contentful-management');
 
 /* Holds Contentful CDN URL. */
 const CDN_URL = 'https://cdn.contentful.com/spaces';
@@ -26,7 +29,7 @@ const CDN_URL = 'https://cdn.contentful.com/spaces';
 const PREVIEW_URL = 'https://preview.contentful.com/spaces';
 
 /* Holds base URL of Community App CDN. */
-const TC_CDN_URL = `${config.CDN.PUBLIC}/contentful`;
+// const TC_CDN_URL = `${config.CDN.PUBLIC}/contentful`;
 
 export const ASSETS_DOMAIN = 'assets.ctfassets.net';
 export const IMAGES_DOMAIN = 'images.ctfassets.net';
@@ -44,6 +47,7 @@ const MAX_FETCH_RETRIES = 5;
  *
  * @param {Object} asset
  */
+/*
 function mapAssetFileUrlToCdn(asset) {
   let x = asset.fields.file.url.split('/');
   switch (x[2]) {
@@ -57,6 +61,7 @@ function mapAssetFileUrlToCdn(asset) {
   }
   asset.fields.file.url = x; // eslint-disable-line no-param-reassign
 }
+*/
 
 /**
  * Creates a promise that resolves one second after its creation.
@@ -115,9 +120,9 @@ class ApiService {
    *  actual file path by Community App CDN path.
    * @return {Promise}
    */
-  async getAsset(id, mapFileUrlToCdn) {
+  async getAsset(id /* , mapFileUrlToCdn */) {
     const res = await this.fetch(`/assets/${id}`);
-    if (mapFileUrlToCdn) mapAssetFileUrlToCdn(res);
+    // if (mapFileUrlToCdn) mapAssetFileUrlToCdn(res);
     return res;
   }
 
@@ -137,9 +142,9 @@ class ApiService {
    *  actual file path by Community App CDN path.
    * @return {Promise}
    */
-  async queryAssets(query, mapFileUrlToCdn) {
+  async queryAssets(query /* , mapFileUrlToCdn */) {
     const res = await this.fetch('/assets', query);
-    if (mapFileUrlToCdn) res.items.forEach(x => mapAssetFileUrlToCdn(x));
+    // if (mapFileUrlToCdn) res.items.forEach(x => mapAssetFileUrlToCdn(x));
     return res;
   }
 
@@ -151,6 +156,39 @@ class ApiService {
   queryEntries(query) {
     return this.fetch('/entries', query);
   }
+}
+
+/**
+ * Updates votes count in Contentful articles
+ * @param {Object} body
+ * @param {String} body.id
+ * @param {Object} body.votes
+ */
+export function articleVote(body) {
+  const client = contentful.createClient({
+    accessToken: config.SECRET.CONTENTFUL.MANAGEMENT_TOKEN,
+  });
+  return client.getSpace(config.SECRET.CONTENTFUL.EDU.SPACE_ID)
+    .then(space => space.getEnvironment('master'))
+    .then(environment => environment.getEntry(body.id))
+    .then((entry) => {
+      if (!entry.fields.upvotes) {
+        entry.fields.upvotes = {
+          'en-US': body.votes.upvotes,
+        };
+      } else {
+        entry.fields.upvotes['en-US'] = body.votes.upvotes;
+      }
+      if (!entry.fields.downvotes) {
+        entry.fields.downvotes = {
+          'en-US': body.votes.downvotes,
+        };
+      } else {
+        entry.fields.downvotes['en-US'] = body.votes.downvotes;
+      }
+      return entry.update();
+    })
+    .then(entry => entry.publish());
 }
 
 // /* Contentful CDN service. */

@@ -7,8 +7,11 @@
  *   Passes the relevent state and setters as properties to the UI components.
  */
 import actions from 'actions/page/submission';
+import communityActions from 'actions/tc-communities';
+import shortId from 'shortid';
 import React from 'react';
 import PT from 'prop-types';
+import _ from 'lodash';
 import { connect } from 'react-redux';
 import SubmissionsPage from 'components/SubmissionPage';
 import AccessDenied, { CAUSE as ACCESS_DENIED_REASON } from 'components/tc-communities/AccessDenied';
@@ -22,7 +25,14 @@ class SubmissionsPageContainer extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentDidMount() { }
+  componentDidMount() {
+    const {
+      auth,
+      getCommunitiesList,
+    } = this.props;
+
+    getCommunitiesList(auth);
+  }
 
   /* A child component has called their submitForm() prop, prepare the passed
      form data for submission and create a submit action */
@@ -32,15 +42,16 @@ class SubmissionsPageContainer extends React.Component {
       tokenV3,
       submit,
       challengeId,
+      subTrack,
       track,
     } = this.props;
-    submit(tokenV3, tokenV2, challengeId, body, track);
+
+    submit(tokenV3, tokenV2, challengeId, body, subTrack === 'MARATHON_MATCH' ? 'DEVELOP' : track);
   }
 
   render() {
     const { registrants, handle } = this.props;
-    const isRegistered = registrants.find(r => r.handle === handle);
-
+    const isRegistered = registrants.find(r => _.toString(r.handle) === _.toString(handle));
     if (!isRegistered) return <AccessDenied cause={ACCESS_DENIED_REASON.NOT_AUTHORIZED} />;
     return (
       <SubmissionsPage
@@ -72,8 +83,14 @@ const filestackDataProp = PT.shape({
  * Prop Validation
  */
 SubmissionsPageContainer.propTypes = {
+  auth: PT.shape().isRequired,
   currentPhases: PT.arrayOf(PT.object).isRequired,
-
+  communitiesList: PT.shape({
+    data: PT.arrayOf(PT.object).isRequired,
+    loadingUuid: PT.string.isRequired,
+    timestamp: PT.number.isRequired,
+  }).isRequired,
+  getCommunitiesList: PT.func.isRequired,
   /* Older stuff */
   userId: PT.string.isRequired,
   challengesUrl: PT.string,
@@ -82,7 +99,9 @@ SubmissionsPageContainer.propTypes = {
   submit: PT.func.isRequired,
   challengeId: PT.number.isRequired,
   track: PT.string.isRequired,
+  subTrack: PT.string.isRequired,
   status: PT.string.isRequired,
+  groups: PT.shape({}).isRequired,
   errorMsg: PT.string.isRequired,
   isSubmitting: PT.bool.isRequired,
   submitDone: PT.bool.isRequired,
@@ -106,6 +125,7 @@ SubmissionsPageContainer.propTypes = {
   setSubmissionFilestackData: PT.func.isRequired,
   submissionFilestackData: filestackDataProp.isRequired,
   registrants: PT.arrayOf(PT.object).isRequired,
+  winners: PT.arrayOf(PT.object).isRequired,
   handle: PT.string.isRequired,
 };
 
@@ -119,8 +139,10 @@ SubmissionsPageContainer.propTypes = {
 const mapStateToProps = (state, ownProps) => {
   const { submission } = state.page;
   return {
+    auth: state.auth,
     currentPhases: state.challenge.details.currentPhases,
-
+    allPhases: state.challenge.details.allPhases,
+    communitiesList: state.tcCommunities.list,
     /* Older stuff below. */
     userId: state.auth.user.userId,
     challengeId: state.challenge.details.id,
@@ -129,7 +151,9 @@ const mapStateToProps = (state, ownProps) => {
     tokenV2: state.auth.tokenV2,
     tokenV3: state.auth.tokenV3,
     track: state.challenge.details.track,
+    subTrack: state.challenge.details.subTrack,
     status: state.challenge.details.status,
+    groups: state.challenge.details.groups,
     isSubmitting: submission.isSubmitting,
     submitDone: submission.submitDone,
     errorMsg: submission.submitErrorMsg,
@@ -139,6 +163,7 @@ const mapStateToProps = (state, ownProps) => {
     notesLength: submission.notesLength,
     submissionFilestackData: submission.submissionFilestackData,
     registrants: state.challenge.details.registrants,
+    winners: state.challenge.details.winners,
     handle: state.auth.user ? state.auth.user.handle : '',
   };
 };
@@ -151,9 +176,15 @@ const mapStateToProps = (state, ownProps) => {
  */
 function mapDispatchToProps(dispatch) {
   const a = actions.page.submission;
+  const ca = communityActions.tcCommunity;
   const progress = data => dispatch(a.uploadProgress(data));
 
   return {
+    getCommunitiesList: (auth) => {
+      const uuid = shortId();
+      dispatch(ca.getListInit(uuid));
+      dispatch(ca.getListDone(uuid, auth));
+    },
     submit: (tokenV3, tokenV2, submissionId, body, track) => {
       dispatch(a.submitInit());
       dispatch(a.submitDone(tokenV3, tokenV2, submissionId, body, track, progress));

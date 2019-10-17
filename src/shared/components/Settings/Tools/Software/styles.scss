@@ -3,9 +3,8 @@
 .software-container {
   display: flex;
   flex-direction: column;
-  align-items: left;
 
-  @include xs-to-sm {
+  @include upto-sm {
     padding-bottom: 0;
   }
 
@@ -18,7 +17,7 @@
     color: $tc-black;
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -45,25 +44,9 @@
       display: none;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
-  }
-}
-
-.error-message {
-  display: none;
-
-  &.active {
-    @include roboto-medium;
-
-    display: block;
-    border-radius: 5px;
-    background-color: $tc-red-10;
-    color: $tc-red-110;
-    font-size: 15px;
-    padding: 15px;
-    margin-bottom: 15px;
   }
 }
 
@@ -96,13 +79,14 @@
 .form-container-mobile {
   display: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     border: 0;
     border-radius: 0;
     display: flex;
     flex-direction: column;
     padding: 20px;
     background-color: $tc-gray-neutral-light;
+    border-bottom: 1px solid $tc-gray-10;
   }
 
   p {
@@ -113,7 +97,7 @@
     font-weight: 400;
     color: $tc-black;
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin-bottom: 20px;
     }
   }
@@ -124,7 +108,7 @@
     margin-bottom: 20px;
     align-content: space-between;
 
-    @include xs-to-sm {
+    @include upto-sm {
       width: 100%;
       display: block;
       margin-bottom: 0;
@@ -132,11 +116,13 @@
 
     .field {
       display: flex;
+      flex: 1;
       flex-direction: column;
       margin-right: 10px;
 
-      @include xs-to-sm {
-        display: block;
+      @include upto-sm {
+        display: flex;
+        flex-direction: column;
         padding-bottom: 10px;
       }
 
@@ -148,28 +134,40 @@
         font-weight: 500;
         color: $tc-gray-80;
         margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+
+        .text-required {
+          color: $tc-red-110;
+        }
       }
 
       &.col-1 {
         width: 45%;
 
-        @include md-to-lg {
+        @include from-sm-to-lg {
           width: 42%;
         }
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
+        }
+
+        > div {
+          @include upto-sm {
+            margin-top: 5px;
+          }
         }
       }
 
       &.col-2 {
         width: 55%;
 
-        @include md-to-lg {
+        @include from-sm-to-lg {
           width: 58%;
         }
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -192,38 +190,49 @@
     border: 1px solid $tc-gray-20;
     border-radius: $corner-radius * 2 $corner-radius * 2 $corner-radius * 2 $corner-radius * 2;
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin-top: 5px;
     }
   }
 }
 
-.button-save {
-  align-self: center;
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  @include xs-to-sm {
-    margin-top: 10px;
-  }
+  .button-save,
+  .button-cancel {
+    align-self: center;
 
-  button,
-  a {
-    @include roboto-medium;
+    @include upto-sm {
+      margin-top: 10px;
+    }
 
-    height: 40px;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 40px;
-    margin: 0;
-    padding: 0;
-    width: 214px;
+    button,
+    a {
+      @include roboto-medium;
 
-    @include xs-to-sm {
-      width: 156px;
+      height: 40px;
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 40px;
+      margin: 0;
+      padding: 0;
+      width: 214px;
+
+      @include upto-sm {
+        width: 156px;
+      }
+    }
+
+    .complete {
+      color: $tc-white;
     }
   }
 
-  .complete {
-    color: $tc-white;
+  .button-cancel {
+    margin-left: 10px;
   }
 }
 
@@ -238,7 +247,7 @@
   color: $tc-gray-80;
   font-size: 15px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 5px;
   }
 }
@@ -254,7 +263,7 @@
     height: 38px;
     line-height: 40px !important;
 
-    @include xs-to-sm {
+    @include upto-sm {
       line-height: 38px !important;
     }
   }

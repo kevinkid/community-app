@@ -3,8 +3,8 @@
 .container {
   display: grid;
   margin: 1em auto;
-  padding: 0 1em;
   overflow: auto;
+  justify-content: center;
 
   @include xl {
     max-width: $screen-lg;
@@ -14,11 +14,10 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+    flex-direction: column;
   }
 
   > div {
-    margin: 0;
-
     @include xs-to-sm {
       margin-bottom: 7px;
     }

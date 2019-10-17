@@ -9,11 +9,10 @@
 
 /* global window */
 
-import Modal from 'components/Modal';
 import PT from 'prop-types';
 import qs from 'qs';
 import React from 'react';
-import { PrimaryButton, SecondaryButton } from 'topcoder-react-ui-kit';
+import { Modal, PrimaryButton, SecondaryButton } from 'topcoder-react-ui-kit';
 import { config } from 'topcoder-react-utils';
 
 import style from './style.scss';
@@ -33,11 +32,7 @@ export default function ConfirmModal({
   let text;
   if (userId) {
     text = (
-      <p>
-Do you want to join
-        {communityName}
-?
-      </p>
+      <p>Do you want to join the&nbsp;{communityName}?</p>
     );
     if (skipConfirmJoin) {
       setImmediate(() => join(token, joinGroupId || groupIds[0], userId));
@@ -45,14 +40,8 @@ Do you want to join
   } else {
     text = customTcAuthModalText || (
       <div>
-        <p>
-You must be a Topcoder member before you can join the
-          {communityName}
-.
-        </p>
-        <p>
-To join, login if you are already a member. If not, register first.
-        </p>
+        <p>You must be a Topcoder member before you can join the&nbsp;{communityName}</p>
+        <p>To join, login if you are already a member. If not, register first.</p>
       </div>
     );
   }

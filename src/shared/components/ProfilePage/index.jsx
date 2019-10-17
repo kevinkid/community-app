@@ -66,7 +66,7 @@ class ProfilePage extends React.Component {
     const { copilot, stats } = this.props;
     const activeTracks = [];
 
-    if (copilot && stats.COPILOT && stats.COPILOT.fulfillment) {
+    if (copilot && stats && stats.COPILOT && stats.COPILOT.fulfillment) {
       activeTracks.push({
         name: 'COPILOT',
         subTracks: [{
@@ -78,12 +78,12 @@ class ProfilePage extends React.Component {
 
     ['DEVELOP', 'DESIGN', 'DATA_SCIENCE'].forEach((track) => {
       const active = [];
-      const subTracks = stats[track] ? stats[track].subTracks || [] : [];
+      const subTracks = stats && stats[track] ? stats[track].subTracks || [] : [];
 
-      if (stats[track].SRM) {
+      if (stats && stats[track].SRM) {
         subTracks.push({ ...stats[track].SRM, name: 'SRM' });
       }
-      if (stats[track].MARATHON_MATCH) {
+      if (stats && stats[track].MARATHON_MATCH) {
         subTracks.push({ ...stats[track].MARATHON_MATCH, name: 'MARATHON MATCH' });
       }
 
@@ -112,12 +112,12 @@ class ProfilePage extends React.Component {
     const {
       achievements,
       copilot,
-      country,
       externalAccounts,
       externalLinks,
       info,
       skills: propSkills,
       stats,
+      lookupData,
     } = this.props;
 
     const {
@@ -126,17 +126,30 @@ class ProfilePage extends React.Component {
       skillsExpanded,
     } = this.state;
 
+    // get country
+    let country = '';
+    if (_.has(lookupData, 'countries') && lookupData.countries.length > 0) {
+      const countryCode = _.isEmpty(_.get(info, 'homeCountryCode'))
+        ? _.get(info, 'competitionCountryCode') : _.get(info, 'homeCountryCode');
+
+      const result = _.find(lookupData.countries,
+        c => countryCode && c.countryCode === countryCode.toUpperCase());
+      country = _.isEmpty(result) ? '' : result.country;
+    }
+
     // Convert skills from object to an array for easier iteration
-    let skills = _.map(propSkills, (skill, tagId) => ({ tagId, ...skill }));
+    let skills = propSkills ? _.map(propSkills, (skill, tagId) => ({ tagId, ...skill })) : [];
     const showMoreButton = skills.length > MAX_SKILLS;
     if (!skillsExpanded) {
       skills = skills.slice(0, MAX_SKILLS);
     }
 
     let externals = _.map(_.pick(externalAccounts, _.map(dataMap, 'provider')), (data, type) => ({ type, data }));
-    externalLinks.map(data => externals.push(({ type: 'weblink', data })));
-    externals = _.filter(externals, 'data');
-    externals = _.sortBy(externals, 'type');
+    if (externalLinks) {
+      externalLinks.map(data => externals.push(({ type: 'weblink', data })));
+      externals = _.filter(externals, 'data');
+      externals = _.sortBy(externals, 'type');
+    }
 
     const activeTracks = this.getActiveTracks();
 
@@ -154,7 +167,7 @@ class ProfilePage extends React.Component {
           />
           )
         }
-        <div styleName="profile-container">
+        <div styleName="profile-container" role="main">
           <div styleName="about-container">
             <div styleName="profile-header-container">
               <Sticky
@@ -169,7 +182,7 @@ class ProfilePage extends React.Component {
                     info={info}
                     onShowBadges={() => this.setState({ badgesModalOpen: true })}
                     showBadgesButton={achievements.length > 0}
-                    wins={stats.wins}
+                    wins={_.get(stats, 'wins', 0)}
                   />
                 </div>
               </Sticky>
@@ -199,13 +212,16 @@ Skills
                     </h3>
                     <div styleName="list">
                       {
-                        skills.map(({ tagId, tagName, hidden }) => (
+                        skills.map(({
+                          tagId, tagName, hidden, sources,
+                        }) => (
                           !hidden
                           && (
                           <div key={tagId} styleName="skill">
                             <Skill
                               tagId={tagId}
                               tagName={tagName}
+                              isVerified={_.includes(sources, 'CHALLENGE')}
                             />
                           </div>
                           )
@@ -238,9 +254,13 @@ VIEW LESS
                 </div>
                 )
               }
-              <div id="profile-activity">
-                <StatsCategory handle={info.handle} stats={stats} />
-              </div>
+              {
+                stats && (
+                  <div id="profile-activity">
+                    <StatsCategory handle={info.handle} stats={stats} />
+                  </div>
+                )
+              }
               {
                 !_.isEmpty(externals)
                 && (
@@ -253,7 +273,8 @@ On The Web
                       externals.map(external => (
                         <ExternalLink
                           data={external.data}
-                          key={external.type}
+                          key={external.type !== 'weblink'
+                            ? external.type : `${external.type}-${external.data.key}`}
                           type={external.type}
                         />
                       ))
@@ -270,15 +291,21 @@ On The Web
   }
 }
 
+ProfilePage.defaultProps = {
+  achievements: [],
+  skills: null,
+  stats: null,
+};
+
 ProfilePage.propTypes = {
-  achievements: PT.arrayOf(PT.shape()).isRequired,
+  achievements: PT.arrayOf(PT.shape()),
   copilot: PT.bool.isRequired,
-  country: PT.string.isRequired,
   externalAccounts: PT.shape().isRequired,
   externalLinks: PT.arrayOf(PT.shape()).isRequired,
   info: PT.shape().isRequired,
-  skills: PT.shape().isRequired,
-  stats: PT.shape().isRequired,
+  skills: PT.shape(),
+  stats: PT.shape(),
+  lookupData: PT.shape().isRequired,
 };
 
 export default ProfilePage;

@@ -1,7 +1,7 @@
 @import "../../../style";
 
 .image {
-  @include xs-to-sm {
+  @include upto-sm {
     display: none;
   }
 
@@ -12,7 +12,7 @@
     p.handle {
       display: none;
 
-      @include xs-to-sm {
+      @include upto-sm {
         @include roboto-regular;
 
         display: block;
@@ -30,8 +30,10 @@
       width: 120px;
       height: 120px;
       padding: 2px;
+      background: #fff;
+      color: #fff;
 
-      @include xs-to-sm {
+      @include upto-sm {
         width: 80px;
         height: 80px;
         margin-right: 10px;
@@ -91,4 +93,16 @@
       }
     }
   }
+}
+
+.error-message {
+  @include roboto-medium;
+
+  display: block;
+  border-radius: 5px;
+  background-color: $tc-red-10;
+  color: $tc-red-110;
+  font-size: 15px;
+  padding: 15px;
+  margin: 15px 0;
 }

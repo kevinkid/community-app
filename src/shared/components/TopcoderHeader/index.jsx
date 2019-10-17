@@ -4,7 +4,7 @@ import { getRatingColor } from 'utils/tc';
 import PT from 'prop-types';
 import React from 'react';
 
-import { config } from 'topcoder-react-utils';
+import { config, Link } from 'topcoder-react-utils';
 
 import Auth from './Auth';
 import IconNavBlog from '../../../assets/images/nav/blog.svg';
@@ -19,6 +19,7 @@ import IconNavPrograms from '../../../assets/images/nav/programs.svg';
 import IconNavRocket from '../../../assets/images/nav/rocket.svg';
 import IconNavStatistics from '../../../assets/images/nav/statistics.svg';
 import IconNavTcoGeneric from '../../../assets/images/nav/tco-generic.svg';
+// import IconNavThrive from '../../../assets/images/nav/thrive.svg';
 
 /* For user sub-menu. */
 import IconNavDashboard from '../../../assets/images/nav/dashboard.svg';
@@ -56,7 +57,8 @@ const MENU = [{
     title: 'Competitive Programming',
   }],
 }, {
-  title: 'Learn',
+  title: 'Tracks',
+  url: `${BASE_URL}/community/learn`,
   items: [
   /* {
     enforceA: true,
@@ -65,6 +67,16 @@ const MENU = [{
     title: 'Getting Started',
   }, */
     {
+      enforceA: true,
+      icon: <IconNavBookCP />,
+      link: `${BASE_URL}/community/competitive-programming`,
+      title: 'Competitive Programming',
+    }, {
+      enforceA: true,
+      icon: <IconNavBookData />,
+      link: `${BASE_URL}/community/data-science/`,
+      title: 'Data Science',
+    }, {
       enforceA: true,
       icon: <IconNavBookDesign />,
       link: `${BASE_URL}/community/design`,
@@ -76,14 +88,9 @@ const MENU = [{
       title: 'Development',
     }, {
       enforceA: true,
-      icon: <IconNavBookData />,
-      link: `${BASE_URL}/community/data-science/`,
-      title: 'Data Science',
-    }, {
-      enforceA: true,
-      icon: <IconNavBookCP />,
-      link: `${BASE_URL}/community/competitive-programming`,
-      title: 'Competitive Programming',
+      icon: <IconNavBoolDevelop />,
+      link: `${BASE_URL}/community/qa`,
+      title: 'QA',
     }],
 }, {
   title: 'Community',
@@ -117,6 +124,12 @@ const MENU = [{
     link: `${BASE_URL}/blog`,
     title: 'Blog',
   }],
+  // }, {
+  //   enforceA: true,
+  //   icon: <IconNavThrive />,
+  //   link: `${BASE_URL}/thrive`,
+  //   title: 'Thrive',
+  // }],
 }];
 
 export default class TopcoderHeader extends React.Component {
@@ -236,7 +249,11 @@ export default class TopcoderHeader extends React.Component {
           }}
           styleName={styleName}
         >
-          {item.title}
+          {item.url ? (
+            <Link to={item.url}>
+              {item.title}
+            </Link>
+          ) : <span role="link" tabIndex={0}>{item.title}</span>}
         </li>
       );
     });
@@ -303,6 +320,12 @@ export default class TopcoderHeader extends React.Component {
               this.addGlobalTouchListener();
             }
           }}
+          onFocus={event => !isMobile && openMenu(userSubMenu, event.target)}
+          onBlur={() => {
+            if (!isMobile) closeMenu();
+          }}
+          role="link"
+          tabIndex={0}
           styleName="user-menu"
         >
           <div
@@ -313,7 +336,7 @@ export default class TopcoderHeader extends React.Component {
           >
             {normalizedProfile.handle}
           </div>
-          {userAvatar}
+          <span>{userAvatar}</span>
         </div>
       );
     } else {
@@ -327,6 +350,7 @@ export default class TopcoderHeader extends React.Component {
     return (
       <div
         styleName="header"
+        role="banner"
         ref={(div) => { this.headerRoot = div; }}
         onMouseLeave={() => {
           if (openedMenu) {
@@ -338,18 +362,26 @@ export default class TopcoderHeader extends React.Component {
         }}
       >
         <div styleName="main-desktop-header">
-          <a href={BASE_URL} styleName="logo">
-            <LogoTopcoderWithName height={53} width={135} />
+          <a href={BASE_URL} styleName="logo" aria-label="Topcoder Logo link to Topcoder Homepage">
+            <LogoTopcoderWithName height={53} width={135} title="Topcoder Logo link to Topcoder Homepage" />
           </a>
-          <ul styleName="main-menu" ref={(ul) => { this.mainMenu = ul; }}>
+          <ul styleName="main-menu" role="navigation" ref={(ul) => { this.mainMenu = ul; }}>
             {mainMenu}
           </ul>
           <div styleName="right-menu">
             {userMenuHandle}
             {authButtons}
             <div
+              aria-label="Find members by username or skill"
+              role="button"
+              tabIndex={0}
               data-menu="search"
               className={searchOpened ? 'opened' : ''}
+              onFocus={event => !isMobile && openSearch(event.target)}
+              onBlur={(event) => {
+                if (!isMobile && activeTrigger
+                  && 1 + event.pageY < activeTrigger.bottom) closeSearch();
+              }}
               onMouseEnter={event => !isMobile && openSearch(event.target)}
               onMouseLeave={(event) => {
                 if (!isMobile && activeTrigger
@@ -377,7 +409,8 @@ export default class TopcoderHeader extends React.Component {
           trigger={activeTrigger}
         />
         <div
-          className={searchOpened ? 'opened' : ''}
+          role="search"
+          className={searchOpened ? 'opened' : 'closed'}
           onMouseLeave={(event) => {
             /* False when cursor leaves from the sub-menu to the element that has
              * opened it. In that case we want to keep the menu opened, and the
@@ -399,6 +432,8 @@ export default class TopcoderHeader extends React.Component {
                 }`;
               }
             }}
+            onBlur={closeSearch}
+            aria-label="Find members by username or skill"
             placeholder="Find members by username or skill"
           />
         </div>

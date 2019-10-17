@@ -13,7 +13,7 @@ $checkbox-bg-selected: $tc-dark-blue;
   flex-direction: column;
   align-items: left;
 
-  @include xs-to-sm {
+  @include upto-sm {
     padding-bottom: 0;
   }
 
@@ -26,7 +26,7 @@ $checkbox-bg-selected: $tc-dark-blue;
     color: $tc-black;
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -53,7 +53,7 @@ $checkbox-bg-selected: $tc-dark-blue;
       display: none;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -70,19 +70,28 @@ $checkbox-bg-selected: $tc-dark-blue;
     background-color: $tc-red-10;
     color: $tc-red-110;
     font-size: 15px;
-    padding: 15px;
+    line-height: 21px;
+    padding: 12px 15px;
     margin-bottom: 15px;
+    white-space: pre-line;
   }
 }
 
 label {
   @include roboto-medium;
 
+  display: block;
   font-size: 12px;
   line-height: 15px;
   font-weight: 500;
   color: $tc-gray-80;
   margin-bottom: 5px;
+
+  .text-required {
+    font-size: 10px;
+    color: $tc-red-110;
+    margin-left: 5px;
+  }
 }
 
 .tc-checkbox {
@@ -93,7 +102,7 @@ label {
   display: inline-block;
   bottom: 0;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-bottom: 10px;
   }
 
@@ -182,12 +191,22 @@ label {
     user-select: none;
     cursor: pointer;
   }
+
+  .row {
+    .field {
+      &.col-1,
+      &.col-1-no-padding {
+        max-width: 200px;
+        min-width: 200px;
+      }
+    }
+  }
 }
 
 .form-container-mobile {
   display: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     border: 0;
     border-radius: 0;
     display: flex;
@@ -204,7 +223,7 @@ label {
     font-weight: 400;
     color: $tc-black;
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin-bottom: 20px;
     }
   }
@@ -216,7 +235,7 @@ label {
     align-content: space-between;
     width: 100%;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: block;
       margin-bottom: 0;
     }
@@ -230,8 +249,9 @@ label {
       flex-direction: column;
       margin-right: 10px;
 
-      @include xs-to-sm {
-        display: block;
+      @include upto-sm {
+        display: flex;
+        flex-direction: column;
         padding-bottom: 10px;
       }
 
@@ -253,10 +273,11 @@ label {
         align-items: center;
       }
 
-      &.col-1 {
+      &.col-1,
+      &.col-1-no-padding {
         width: 23%;
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -264,7 +285,7 @@ label {
       &.col-2 {
         width: 51%;
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -272,7 +293,7 @@ label {
       &.col-3 {
         width: 26%;
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -280,7 +301,7 @@ label {
       &.col-date {
         width: 175px;
 
-        @include xs-to-sm {
+        @include upto-sm {
           width: 100%;
         }
       }
@@ -288,7 +309,7 @@ label {
       &.col-checkbox {
         position: relative;
 
-        @include xs-to-sm {
+        @include upto-sm {
           top: 25px;
         }
       }
@@ -307,37 +328,48 @@ label {
     border: 1px solid $tc-gray-20;
     border-radius: $corner-radius * 2 $corner-radius * 2 $corner-radius * 2 $corner-radius * 2;
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin-top: 5px;
     }
   }
 }
 
-.button-save {
-  align-self: center;
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-  @include xs-to-sm {
-    margin-top: 30px;
-  }
+  .button-save,
+  .button-cancel {
+    align-self: center;
 
-  button,
-  a {
-    @include roboto-medium;
+    @include upto-sm {
+      margin-top: 30px;
+    }
 
-    height: 40px;
-    font-size: 15px;
-    font-weight: 500;
-    margin: 0;
-    padding: 0;
-    width: 250px;
+    button,
+    a {
+      @include roboto-medium;
 
-    @include xs-to-sm {
-      width: 156px;
+      height: 40px;
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0;
+      padding: 0;
+      width: 250px;
+
+      @include upto-sm {
+        width: 156px;
+      }
+    }
+
+    .complete {
+      color: $tc-white;
     }
   }
 
-  .complete {
-    color: $tc-white;
+  .button-cancel {
+    margin-left: 10px;
   }
 }
 
@@ -352,7 +384,7 @@ label {
   color: $tc-gray-80;
   font-size: 15px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 5px;
   }
 }
@@ -368,7 +400,7 @@ label {
     height: 38px;
     line-height: 40px !important;
 
-    @include xs-to-sm {
+    @include upto-sm {
       line-height: 38px !important;
     }
   }

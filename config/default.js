@@ -1,12 +1,16 @@
 /* All availalbe configuration options should be documented in the default
  * config file, even when they are overriden in every custom configuration. */
 
+const { deferConfig } = require('config/defer');
+
 module.exports = {
   /* Configuration of Topcoder APIs. */
   API: {
     V2: 'https://api.topcoder-dev.com/v2',
     V3: 'https://api.topcoder-dev.com/v3',
+    V4: 'https://api.topcoder-dev.com/v4',
     V5: 'https://api.topcoder-dev.com/v5',
+    MM_BROKER: '/api',
   },
 
   /* Auth0 config */
@@ -24,6 +28,11 @@ module.exports = {
   CDN: {
     PUBLIC: 'https://d1aahxkjiobka8.cloudfront.net',
   },
+
+  /* Time in MS to wait before refreshing challenge details after register
+   * and unregister.  Used to allow API sufficent time to update.
+   */
+  CHALLENGE_DETAILS_REFRESH_DELAY: 3000,
 
   COOKIES: {
     /* Expiration time [days] for browser cookies set by the App. */
@@ -43,6 +52,11 @@ module.exports = {
     DEFAULT_SPACE_NAME: 'default',
     DEFAULT_ENVIRONMENT: 'master',
   },
+
+  /**
+   * Disable PWA service worker.
+   */
+  DISABLE_SERVICE_WORKER: false,
 
   /* API token for logentries.com. The token below is just for local testing of
    * the setup. To override it use LOG_ENTRIES_TOKEN environment variable. */
@@ -106,6 +120,7 @@ module.exports = {
     COMMUNITIES: {
       BLOCKCHAIN: 'https://blockchain.topcoder-dev.com',
       COGNITIVE: 'https://cognitive.topcoder-dev.com',
+      ZURICH: 'https://community-app.topcoder-dev.com/__community__/zurich',
     },
 
     /* Dedicated section to group together links to various articles in
@@ -136,12 +151,13 @@ module.exports = {
     WIPRO: 'https://wipro.topcoder.com',
     COMMUNITY_API: 'http://localhost:8000',
     COMMUNITY_APP_GITHUB_ISSUES: 'https://github.com/topcoder-platform/community-app/issues',
+    EMAIL_VERIFY_URL: 'http://www.topcoder-dev.com/settings/account/changeEmail',
   },
 
   /* Information about Topcoder user groups can be cached in various places.
    * This value [seconds] specifies the maximum age after which a group data
    * object should be considered outdated, and updated as soon as possible. */
-  USER_GROUP_MAXAGE: 600,
+  USER_GROUP_MAXAGE: 24 * 60 * 60 * 1000,
 
   /* Filestack configuration for uploading Submissions
    * These are for the development back end */
@@ -155,9 +171,18 @@ module.exports = {
    * parameters that should never be send to the client side. */
   SECRET: {
     CONTENTFUL: {
+      MANAGEMENT_TOKEN: '', // Personal Access Token to use the Content Management API
       default: { // Human-readable name of space
         SPACE_ID: '',
         master: { // Name of an environment
+          CDN_API_KEY: '',
+          PREVIEW_API_KEY: '',
+        },
+      },
+      /* Space for expert communities. */
+      zurich: {
+        SPACE_ID: '',
+        master: {
           CDN_API_KEY: '',
           PREVIEW_API_KEY: '',
         },
@@ -170,8 +195,88 @@ module.exports = {
           PREVIEW_API_KEY: '',
         },
       },
+      EDU: {
+        SPACE_ID: '',
+        master: {
+          CDN_API_KEY: '',
+          PREVIEW_API_KEY: '',
+        },
+      },
+    },
+
+    MAILCHIMP: {
+      default: {
+        API_KEY: '',
+        MAILCHIMP_BASE_URL: '',
+      },
     },
 
     OPEN_EXCHANGE_RATES_KEY: '',
+
+    /* Review type ID for AV Scans. */
+    AV_SCAN_SCORER_REVIEW_TYPE_ID: '',
+
+    JWT_AUTH: {
+      SECRET: '',
+      VALID_ISSUERS: deferConfig(function d() {
+        return this.VALID_ISSUERS ? this.VALID_ISSUERS.replace(/\\"/g, '')
+          : '["https://api.topcoder-dev.com", "https://api.topcoder.com", "https://topcoder-dev.auth0.com/"]';
+      }),
+    },
+
+    /* These credentials allow Community App server to communicate with
+     * protected TC API endpoints (on behalf of the app itself). */
+    TC_M2M: {
+      AUTH0_URL: '',
+      CLIENT_ID: '',
+      CLIENT_SECRET: '',
+      AUDIENCE: '',
+      GRANT_TYPE: '',
+      AUTH0_PROXY_SERVER_URL: '',
+    },
   },
+
+  SECONDARY_MENU_FOR_LOGGED_USER: [
+    {
+      title: 'Dashboard',
+      href: '/my-dashboard',
+    },
+    {
+      id: 'myprofile',
+      title: 'My Profile',
+      href: '/members/',
+    },
+    {
+      title: 'Payments',
+      href: 'https://community.topcoder-dev.com/PactsMemberServlet?module=PaymentHistory&full_list=false',
+    },
+  ],
+  SECONDARY_MENU_FOR_GUEST: [
+    {
+      title: 'Overview',
+      href: 'https://www.topcoder-dev.com/about',
+    },
+    {
+      title: 'How It Works',
+      href: 'https://www.topcoder-dev.com/how-it-works/faqs/',
+    },
+    {
+      title: 'Tracks',
+      href: '/community/learn',
+    },
+    {
+      title: 'Why Join',
+      href: 'https://www.topcoder-dev.com/about/why-crowdsourcing/',
+    },
+  ],
+  ACCOUNT_MENU_SWITCH_TEXT: {
+    title: 'Switch to BUSINESS',
+    href: 'https://connect.topcoder-dev.com',
+  },
+  // Config for TC EDU
+  TC_EDU_BASE_PATH: '/thrive',
+  TC_EDU_TRACKS_PATH: '/tracks',
+  TC_EDU_ARTICLES_PATH: '/articles',
+  TC_EDU_SEARCH_PATH: '/search',
+  TC_EDU_SEARCH_BAR_MAX_RESULTS_EACH_GROUP: 3,
 };
