@@ -65,7 +65,7 @@ export default function Mobile({ base, meta }) {
                   communityId: meta.communityId,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})`}
               />
               <Route
                 component={routeProps => Submission({
@@ -73,7 +73,7 @@ export default function Mobile({ base, meta }) {
                   challengesUrl: `${base}/challenges`,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})/submit`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})/submit`}
               />
               <Route
                 component={routeProps => SubmissionManagement({
@@ -81,7 +81,7 @@ export default function Mobile({ base, meta }) {
                   challengesUrl: `${base}/challenges`,
                 })}
                 exact
-                path={`${base}/challenges/:challengeId(\\d{8})/my-submissions`}
+                path={`${base}/challenges/:challengeId(\\d{8}|\\d{5})/my-submissions`}
               />
               <Route
                 component={TermsDetail}
@@ -109,5 +109,7 @@ Mobile.defaultProps = {
 
 Mobile.propTypes = {
   base: PT.string,
-  meta: PT.shape({}),
+  meta: PT.shape({
+    communityId: PT.any,
+  }),
 };

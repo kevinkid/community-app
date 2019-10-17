@@ -37,11 +37,8 @@ class ProfileContainer extends React.Component {
 
   render() {
     const {
-      achievements,
       info,
       loadingError,
-      skills,
-      stats,
     } = this.props;
 
     if (loadingError) {
@@ -62,7 +59,7 @@ class ProfileContainer extends React.Component {
       });
     }
 
-    return achievements && info && skills && stats
+    return info
       ? (
         <ProfilePage
           {...this.props}
@@ -96,6 +93,7 @@ ProfileContainer.propTypes = {
   profileForHandle: PT.string,
   skills: PT.shape(),
   stats: PT.shape(),
+  lookupData: PT.shape().isRequired,
 };
 
 const mapStateToProps = (state, ownProps) => ({
@@ -110,10 +108,12 @@ const mapStateToProps = (state, ownProps) => ({
   profileForHandle: state.profile.profileForHandle,
   skills: state.profile.skills,
   stats: state.profile.stats,
+  lookupData: state.lookup,
 });
 
 function mapDispatchToProps(dispatch) {
   const a = actions.profile;
+  const lookupActions = actions.lookup;
   return {
     loadProfile: (handle) => {
       dispatch(a.clearProfile());
@@ -124,12 +124,14 @@ function mapDispatchToProps(dispatch) {
       dispatch(a.getInfoInit());
       dispatch(a.getSkillsInit());
       dispatch(a.getStatsInit());
-      dispatch(a.getAchievementsDone(handle));
+      dispatch(lookupActions.getCountriesInit());
+      dispatch(a.getAchievementsV3Done(handle));
       dispatch(a.getExternalAccountsDone(handle));
       dispatch(a.getExternalLinksDone(handle));
       dispatch(a.getInfoDone(handle));
       dispatch(a.getSkillsDone(handle));
       dispatch(a.getStatsDone(handle));
+      dispatch(lookupActions.getCountriesDone());
     },
   };
 }

@@ -4,10 +4,9 @@
 import _ from 'lodash';
 import React from 'react';
 import PT from 'prop-types';
-import { PrimaryButton, Button } from 'topcoder-react-ui-kit';
+import { Modal, PrimaryButton, Button } from 'topcoder-react-ui-kit';
 
 import { activeRoleIds, openPositionsByRole } from 'utils/reviewOpportunities';
-import Modal from 'components/Modal';
 
 import theme from './styles.scss';
 
@@ -84,6 +83,7 @@ Payment
                       type="checkbox"
                     />
                     <label htmlFor={`${position.roleId}-checkbox`}>
+                      <input type="hidden" />
                       <div styleName="tc-checkbox-label" />
                     </label>
                   </div>

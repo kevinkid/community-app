@@ -12,12 +12,22 @@ import { fixStyle } from 'utils/contentful';
 import defaultTheme from './themes/default.scss';
 
 function ContentBlock({
+  id,
   background,
   contentBlock,
   theme,
+  spaceName,
+  environment,
+  preview,
 }) {
+  const contentfulConfig = {
+    spaceName,
+    environment,
+    preview,
+  };
   return (
     <div
+      id={id}
       className={theme.container}
       style={fixStyle(contentBlock.extraStylesForContainer)}
     >
@@ -28,7 +38,7 @@ function ContentBlock({
         {
           background ? (
             <div className={theme.image}>
-              <img alt="" src={background.file.url} />
+              <img alt={contentBlock.alt || contentBlock.name} src={background.file.url} />
             </div>
           ) : null
         }
@@ -36,7 +46,7 @@ function ContentBlock({
           className={theme.content}
           style={fixStyle(contentBlock.extraStylesForContent)}
         >
-          <MarkdownRenderer markdown={contentBlock.text} />
+          <MarkdownRenderer markdown={contentBlock.text} {...contentfulConfig} />
         </div>
       </div>
     </div>
@@ -45,9 +55,13 @@ function ContentBlock({
 
 ContentBlock.defaultProps = {
   background: null,
+  preview: false,
+  spaceName: null,
+  environment: null,
 };
 
 ContentBlock.propTypes = {
+  id: PT.string.isRequired,
   background: PT.shape(),
   contentBlock: PT.shape().isRequired,
   theme: PT.shape({
@@ -58,6 +72,9 @@ ContentBlock.propTypes = {
     contentWrapperByImage: PT.string,
     image: PT.string,
   }).isRequired,
+  preview: PT.bool,
+  spaceName: PT.string,
+  environment: PT.string,
 };
 
 export default themr('ContentBlock', defaultTheme)(ContentBlock);

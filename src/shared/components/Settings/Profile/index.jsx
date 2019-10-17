@@ -1,9 +1,10 @@
 /**
  * Child component of Settings/Profile renders setting page for profile.
  */
-/* eslint-disable no-undef */
+
 import React from 'react';
 import PT from 'prop-types';
+import _ from 'lodash';
 
 import Accordion from 'components/Settings/Accordion';
 import SideBar from 'components/Settings/SideBar';
@@ -15,6 +16,7 @@ import OrganizationIcon from 'assets/images/profile/sideicons/organization.svg';
 import SkillIcon from 'assets/images/profile/sideicons/skill.svg';
 import HobbyIcon from 'assets/images/profile/sideicons/hobby.svg';
 import CommunityIcon from 'assets/images/profile/sideicons/community.svg';
+import ErrorWrapper from 'components/Settings/ErrorWrapper';
 import BasicInfo from './BasicInfo';
 import Language from './Language';
 import Education from './Education';
@@ -24,6 +26,8 @@ import Community from './Community';
 import Organization from './Organization';
 import Hobby from './Hobby';
 import ComingSoon from '../ComingSoon';
+import { SCREEN_SIZE } from '../constants';
+
 
 import './styles.scss';
 
@@ -31,40 +35,58 @@ class Profile extends React.Component {
   constructor(props) {
     super(props);
 
+    const hash = decodeURIComponent(_.get(props, 'location.hash', '').substring(1));
+    this.tablink = hash.replace('-', ' ');
+    const { toggleProfileSideTab } = this.props;
+    if (this.tablink) {
+      toggleProfileSideTab(this.tablink);
+    }
     this.state = {
       isMobileView: false,
-      screenSM: 768,
     };
-
+    this.clearNotifiation = this.clearNotifiation.bind(this);
     this.updatePredicate = this.updatePredicate.bind(this);
   }
 
-  /* Add this to resolve checkbox checked issue when switch mobile to other device */
   componentDidMount() {
+    this.clearNotifiation();
     this.updatePredicate();
     window.addEventListener('resize', this.updatePredicate);
   }
 
+  componentDidUpdate(prevProps) {
+    const { settingsUI: { currentProfileTab } } = this.props;
+    if (prevProps.settingsUI.currentProfileTab !== currentProfileTab) {
+      window.location.hash = currentProfileTab.replace(' ', '-');
+      this.clearNotifiation();
+    }
+  }
+
   componentWillUnmount() {
+    this.clearNotifiation();
     window.removeEventListener('resize', this.updatePredicate);
   }
 
-  updatePredicate() {
-    const { screenSM } = this.state;
-    this.setState({ isMobileView: window.innerWidth <= screenSM });
+  clearNotifiation() {
+    const { clearToastrNotification } = this.props;
+    if (clearToastrNotification) {
+      clearToastrNotification();
+    }
   }
-  /* end */
+
+  updatePredicate() {
+    this.setState({ isMobileView: window.innerWidth <= SCREEN_SIZE.SM });
+  }
 
   render() {
     const { isMobileView } = this.state;
-
     const {
       settingsUI: { currentProfileTab, TABS },
       toggleProfileSideTab,
     } = this.props;
     const tabs = TABS.PROFILE;
     const names = Object.keys(tabs).map(key => tabs[key]);
-    const currentTab = currentProfileTab;
+    const currentTab = this.tablink || currentProfileTab;
 
     const icons = {
       'basic info': <InfoIcon />,
@@ -72,9 +94,9 @@ class Profile extends React.Component {
       education: <EducationIcon />,
       work: <WorkIcon />,
       organization: <OrganizationIcon />,
-      skill: <SkillIcon />,
-      hobby: <HobbyIcon />,
-      community: <CommunityIcon />,
+      skills: <SkillIcon />,
+      hobbies: <HobbyIcon />,
+      communities: <CommunityIcon />,
     };
 
     const renderTabContent = (tab) => {
@@ -87,13 +109,13 @@ class Profile extends React.Component {
           return <Education {...this.props} />;
         case 'work':
           return <Work {...this.props} />;
-        case 'skill':
+        case 'skills':
           return <Skills {...this.props} />;
-        case 'community':
+        case 'communities':
           return <Community {...this.props} />;
         case 'organization':
           return <Organization {...this.props} />;
-        case 'hobby':
+        case 'hobbies':
           return <Hobby {...this.props} />;
         default:
           return <ComingSoon />;
@@ -113,17 +135,21 @@ class Profile extends React.Component {
           )
         }
         <div styleName="col-bar">
-          <SideBar
-            icons={icons}
-            names={names}
-            currentTab={currentTab}
-            toggle={toggleProfileSideTab}
-          />
+          <ErrorWrapper>
+            <SideBar
+              icons={icons}
+              names={names}
+              currentTab={currentTab}
+              toggle={toggleProfileSideTab}
+            />
+          </ErrorWrapper>
         </div>
         {
           !isMobileView && (
             <div styleName="col-content">
-              { renderTabContent(currentTab) }
+              <ErrorWrapper>
+                { renderTabContent(currentTab) }
+              </ErrorWrapper>
             </div>
           )
         }
@@ -135,6 +161,8 @@ class Profile extends React.Component {
 Profile.propTypes = {
   settingsUI: PT.shape().isRequired,
   toggleProfileSideTab: PT.func.isRequired,
+  clearToastrNotification: PT.func.isRequired,
+  location: PT.shape().isRequired,
 };
 
 export default Profile;

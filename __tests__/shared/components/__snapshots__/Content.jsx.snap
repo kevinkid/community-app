@@ -475,6 +475,14 @@ exports[`Matches shallow shapshot 1`] = `
         Veterans Community
       </Link>
     </li>
+    <li>
+      <Link
+        replace={false}
+        to="/__community__/zurich"
+      >
+        Zurich Community
+      </Link>
+    </li>
   </ul>
   <h3>
     Previews of Contentful Components
@@ -577,6 +585,26 @@ exports[`Matches shallow shapshot 1`] = `
       >
         <code>
           Viewport
+        </code>
+      </Link>
+    </li>
+    <li>
+      <Link
+        replace={false}
+        to="/examples/contentful/blog-feed/6A61WFKFjimSWoe04ukOI4"
+      >
+        <code>
+          BlogFeed
+        </code>
+      </Link>
+    </li>
+    <li>
+      <Link
+        replace={false}
+        to="/examples/contentful/modal/Pg4e60qnOpfTDxZgMfopT"
+      >
+        <code>
+          Modal
         </code>
       </Link>
     </li>
@@ -889,6 +917,15 @@ exports[`Matches shallow shapshot 1`] = `
         Markdown Rendering
       </Link>
       ‌ – A component that can be passed markdown as a prop and will render it as native React elements.  Also supports inlining a subset of the JSX Components found in Community App.
+    </li>
+    <li>
+      <Link
+        replace={false}
+        to="/examples/looker"
+      >
+        Looker
+      </Link>
+      ‌ – Looker examples.
     </li>
     <li>
       <Link

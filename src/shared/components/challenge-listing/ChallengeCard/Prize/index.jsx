@@ -17,23 +17,20 @@ export default function Prize({
   prizeUnitSymbol,
   totalPrize,
   withoutTooltip,
-  isMM,
 }) {
   const component = (
-    !isMM
-    && (
-    <div>
-      <div styleName="prize">
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    <div tabIndex={0} aria-label={`${label} ${prizeUnitSymbol} ${totalPrize.toLocaleString()}`}>
+      <div styleName="prize" aria-hidden="true">
         <span styleName="symbol">
           {prizeUnitSymbol}
         </span>
         {totalPrize.toLocaleString()}
       </div>
-      <div styleName="label">
+      <div styleName="label" aria-hidden="true">
         {label}
       </div>
     </div>
-    )
   );
   if (withoutTooltip) return component;
   const tip = (
@@ -54,7 +51,6 @@ Prize.defaultProps = {
   bonuses: [],
   prizes: [],
   withoutTooltip: false,
-  isMM: false,
 };
 
 Prize.propTypes = {
@@ -64,5 +60,4 @@ Prize.propTypes = {
   prizeUnitSymbol: PT.string.isRequired,
   totalPrize: PT.number.isRequired,
   withoutTooltip: PT.bool,
-  isMM: PT.bool,
 };

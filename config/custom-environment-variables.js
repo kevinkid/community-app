@@ -8,7 +8,7 @@ module.exports = {
   AUTH0: {
     CLIENT_ID: 'AUTH0_CLIENT_ID',
   },
-
+  DISABLE_SERVICE_WORKER: 'DISABLE_SERVICE_WORKER',
   LOG_ENTRIES_TOKEN: 'LOG_ENTRIES_TOKEN',
   MOCK_TERMS_SERVICE: 'MOCK_TERMS_SERVICE',
 
@@ -27,9 +27,14 @@ module.exports = {
   SEGMENT_IO_API_KEY: 'SEGMENT_IO_API_KEY',
   SERVER_API_KEY: 'SERVER_API_KEY',
 
-  SECRET: {
+  URL: {
+    COMMUNITY_APP: 'COMMUNITY_APP_URL',
+    EMAIL_VERIFY_URL: 'EMAIL_VERIFY_URL',
+  },
 
+  SECRET: {
     CONTENTFUL: {
+      MANAGEMENT_TOKEN: 'CONTENTFUL_MANAGEMENT_TOKEN',
       default: {
         SPACE_ID: 'CONTENTFUL_SPACE_ID',
         master: {
@@ -37,8 +42,43 @@ module.exports = {
           PREVIEW_API_KEY: 'CONTENTFUL_PREVIEW_API_KEY',
         },
       },
+      zurich: {
+        SPACE_ID: 'CONTENTFUL_ZURICH_SPACE_ID',
+        master: {
+          CDN_API_KEY: 'CONTENTFUL_ZURICH_CDN_API_KEY',
+          PREVIEW_API_KEY: 'CONTENTFUL_ZURICH_PREVIEW_API_KEY',
+        },
+      },
+      topgear: {
+        SPACE_ID: 'CONTENTFUL_TOPGEAR_SPACE_ID',
+        master: {
+          CDN_API_KEY: 'CONTENTFUL_TOPGEAR_CDN_API_KEY',
+          PREVIEW_API_KEY: 'CONTENTFUL_TOPGEAR_PREVIEW_API_KEY',
+        },
+      },
+      EDU: {
+        SPACE_ID: 'CONTENTFUL_EDU_SPACE_ID',
+        master: {
+          CDN_API_KEY: 'CONTENTFUL_EDU_CDN_API_KEY',
+          PREVIEW_API_KEY: 'CONTENTFUL_EDU_PREVIEW_API_KEY',
+        },
+      },
+    },
+
+    MAILCHIMP: {
+      default: {
+        API_KEY: 'MAILCHIMP_API_KEY',
+        MAILCHIMP_BASE_URL: 'MAILCHIMP_BASE_URL',
+      },
     },
 
     OPEN_EXCHANGE_RATES_KEY: 'OPEN_EXCHANGE_RATES_KEY',
+
+    TC_M2M: {
+      CLIENT_ID: 'TC_M2M_CLIENT_ID',
+      CLIENT_SECRET: 'TC_M2M_CLIENT_SECRET',
+      AUDIENCE: 'TC_M2M_AUDIENCE',
+      GRANT_TYPE: 'TC_M2M_GRANT_TYPE',
+    },
   },
 };

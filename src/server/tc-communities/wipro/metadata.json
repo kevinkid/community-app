@@ -1,6 +1,6 @@
 {
   "authorizedGroupIds": [
-    "20000000", "20000005", "200000011", "20000016"
+    "20000000", "20000005", "20000011", "20000016"
   ],
   "challengeFilter": {
     "groupIds": ["20000000"]
@@ -25,7 +25,7 @@
   ],
   "hideSearch": true,
   "chevronOverAvatar": true,
-  "footerText": "© Copyright Wipro Ltd 2017",
+  "footerText": "© Copyright Wipro Ltd 2019",
   "menuItems": [
     {
       "title": "Home",
@@ -48,5 +48,9 @@
   "newsFeed": "http://www.topcoder.com/feed",
   "subdomains": ["topgear", "wipro"],
   "description": "Wipro's TopGear community.",
-  "image":"wipro.jpg"
+  "image":"wipro.jpg",
+  "accessDeniedPage": {
+    "viewportId": "2ymrKrU9DISEX0zjAYj2k7",
+    "spaceName": "topgear"
+  }
 }

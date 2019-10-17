@@ -289,7 +289,8 @@ Sorry, no successful challenges found.
                       onPopModal={this.onPopModal}
                       index={index}
                       key={`scroll-subtrack-challenge-${item.name}`}
-                    />))}
+                    />
+                  ))}
                 </div>
               </section>
             </div>
@@ -321,7 +322,7 @@ Sorry, no successful challenges found.
             <div styleName={track}>
               <section>
                 <div styleName="challenges">
-                  {userSrms.map(item => <SRMTile key={`srm-${item.name}`} challenge={item} userId={userId} />)
+                  {userSrms && userSrms.map(item => <SRMTile key={`srm-${item.name}`} challenge={item} userId={userId} />)
                   }
                 </div>
               </section>

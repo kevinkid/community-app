@@ -23,6 +23,15 @@ function ContentSliderItemsLoader(props) {
     autoStart,
     duration,
     theme,
+    sliderId,
+    containerStyle,
+    slidesToShow,
+    framePadding,
+    withoutControls,
+    vertical,
+    cellSpacing,
+    cellAlign,
+    wrapAround,
   } = props;
 
   return (
@@ -30,7 +39,20 @@ function ContentSliderItemsLoader(props) {
       entryIds={ids}
       preview={preview}
       render={data => (
-        <ContentSlider autoStart={autoStart} duration={duration} theme={THEMES[theme]}>
+        <ContentSlider
+          autoStart={autoStart}
+          duration={duration}
+          theme={THEMES[theme]}
+          id={sliderId}
+          containerStyle={containerStyle}
+          slidesToShow={slidesToShow}
+          framePadding={framePadding}
+          withoutControls={withoutControls}
+          vertical={vertical}
+          cellSpacing={cellSpacing}
+          cellAlign={cellAlign}
+          wrapAround={wrapAround}
+        >
           {
             ids.map(itemId => (
               <ContentSliderItem
@@ -52,14 +74,31 @@ function ContentSliderItemsLoader(props) {
 ContentSliderItemsLoader.defaultProps = {
   autoStart: true,
   duration: 5, // 5sec
+  containerStyle: null,
+  slidesToShow: 1,
+  framePadding: null,
+  withoutControls: false,
+  vertical: false,
+  cellSpacing: null,
+  cellAlign: 'center',
+  wrapAround: true,
 };
 
 ContentSliderItemsLoader.propTypes = {
+  sliderId: PT.string.isRequired,
   ids: PT.arrayOf(PT.string).isRequired,
   preview: PT.bool.isRequired,
   autoStart: PT.bool,
   duration: PT.number,
   theme: PT.string.isRequired,
+  containerStyle: PT.shape(),
+  slidesToShow: PT.number,
+  framePadding: PT.string,
+  withoutControls: PT.bool,
+  vertical: PT.bool,
+  cellSpacing: PT.number,
+  cellAlign: PT.string,
+  wrapAround: PT.bool,
 };
 
 export default function ContentfulSlider(props) {
@@ -77,11 +116,20 @@ export default function ContentfulSlider(props) {
         if (!fields) return null;
         return (
           <ContentSliderItemsLoader
+            sliderId={id}
             ids={_.map(fields.items, 'sys.id')}
             preview={preview}
             autoStart={fields.autoStart}
             duration={fields.duration}
             theme={fields.theme}
+            containerStyle={fields.extraStylesForContainer}
+            slidesToShow={fields.slidesToShow}
+            framePadding={fields.framePadding}
+            withoutControls={fields.withoutControls}
+            vertical={fields.vertical}
+            cellSpacing={fields.cellSpacing}
+            cellAlign={fields.cellAlign}
+            wrapAround={fields.wrapAround}
           />
         );
       }}

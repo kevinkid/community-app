@@ -18,19 +18,19 @@ function formatDate(date) {
 }
 
 function getDate(arr, handle) {
-  const results = arr.filter(a => (a.submitter || a.handle) === handle)
+  const results = arr.filter(a => _.toString(a.submitter || a.handle) === _.toString(handle))
     .sort((a, b) => new Date(b.submissionTime || b.submissionDate).getTime()
       - new Date(a.submissionTime || a.submissionDate).getTime());
   return results[0] ? (results[0].submissionTime || results[0].submissionDate) : '';
 }
 
 function passedCheckpoint(checkpoints, handle, results) {
-  const mine = checkpoints.filter(c => c.submitter === handle);
+  const mine = checkpoints.filter(c => _.toString(c.submitter) === _.toString(handle));
   return _.some(mine, m => _.find(results, r => r.submissionId === m.submissionId));
 }
 
 function getPlace(results, handle, places) {
-  const found = _.find(results, w => w.handle === handle
+  const found = _.find(results, w => _.toString(w.handle) === _.toString(handle)
     && w.placement <= places && w.submissionStatus !== 'Failed Review');
 
   if (found) {
@@ -41,10 +41,11 @@ function getPlace(results, handle, places) {
 
 export default function Registrants({ challenge, checkpointResults, results }) {
   const {
-    checkpoints,
     prizes,
     registrants,
   } = challenge;
+
+  const checkpoints = challenge.checkpoints || [];
 
   const twoRounds = challenge.round1Introduction
     && challenge.round2Introduction;
@@ -58,27 +59,28 @@ export default function Registrants({ challenge, checkpointResults, results }) {
     - new Date(b.registrationDate).getTime());
 
   return (
-    <div styleName={`container ${twoRounds ? 'design' : ''}`}>
-      <div styleName="head">
+    <div styleName={`container ${twoRounds ? 'design' : ''}`} role="table" aria-label="Registrants">
+      <div styleName="head" role="row">
         <div styleName="col-1">
-Username
+          <span role="columnheader">Username</span>
         </div>
         <div styleName="col-2">
-Registration Date
+          <span role="columnheader">Registration Date</span>
         </div>
         {twoRounds && (
         <div styleName="col-3">
-Round 1 Submitted Date
+          <span role="columnheader">Round 1 Submitted Date</span>
         </div>
         )}
         <div styleName="col-4">
-          {twoRounds ? 'Round 2 Submitted Date' : 'Submitted Date'}
+          <span role="columnheader">{twoRounds ? 'Round 2 Submitted Date' : 'Submitted Date'}</span>
         </div>
       </div>
-      <div styleName="body">
+      <div styleName="body" role="rowgroup">
         {
           registrants.map((r) => {
             const placement = getPlace(results, r.handle, places);
+            const colorStyle = JSON.parse(r.colorStyle.replace(/(\w+):\s*([^;]*)/g, '{"$1": "$2"}'));
 
             let checkpoint;
             if (twoRounds) {
@@ -96,17 +98,19 @@ Round 1 Submitted Date
             }
 
             return (
-              <div styleName="row" key={r.handle}>
+              <div styleName="row" key={r.handle} role="row">
                 <div styleName="col-1">
-                  <a href={`${config.URL.BASE}/members/${r.handle}`}>
-                    {r.handle}
-                  </a>
+                  <span role="cell">
+                    <a href={`${config.URL.BASE}/members/${r.handle}`} style={colorStyle}>
+                      {r.handle}
+                    </a>
+                  </span>
                 </div>
                 <div styleName="col-2">
                   <div styleName="sm-only title">
 Registration Date
                   </div>
-                  {formatDate(r.registrationDate)}
+                  <span role="cell">{formatDate(r.registrationDate)}</span>
                 </div>
                 {
                   twoRounds
@@ -116,7 +120,7 @@ Registration Date
 Round 1 Submitted Date
                     </div>
                     <div>
-                      <span>
+                      <span role="cell">
                         {checkpoint}
                       </span>
                       {
@@ -133,11 +137,11 @@ Round 1 Submitted Date
 Submitted Date
                   </div>
                   <div>
-                    <span>
+                    <span role="cell">
                       {final}
                     </span>
                     {placement > 0 && (
-                    <span styleName={`placement ${placement < 4 ? `placement-${placement}` : ''}`}>
+                    <span role="cell" styleName={`placement ${placement < 4 ? `placement-${placement}` : ''}`}>
                       {placement}
                     </span>
                     )}
@@ -154,7 +158,7 @@ Submitted Date
 
 Registrants.defaultProps = {
   results: [],
-  checkpointResults: [],
+  checkpointResults: {},
 };
 
 Registrants.propTypes = {
@@ -164,12 +168,12 @@ Registrants.propTypes = {
       phaseType: PT.string.isRequired,
       scheduledEndTime: PT.string,
     })).isRequired,
-    checkpoints: PT.arrayOf(PT.shape()).isRequired,
+    checkpoints: PT.arrayOf(PT.shape()),
     prizes: PT.arrayOf(PT.number).isRequired,
     registrants: PT.arrayOf(PT.shape()).isRequired,
     round1Introduction: PT.string,
     round2Introduction: PT.string,
   }).isRequired,
   results: PT.arrayOf(PT.shape()),
-  checkpointResults: PT.arrayOf(PT.shape()),
+  checkpointResults: PT.shape(),
 };

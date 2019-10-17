@@ -40,6 +40,9 @@ exports[`Matches shallow shapshot 1`] = `
           htmlFor="keyword-select"
         >
           Keywords
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           id="keyword-select"
@@ -57,6 +60,8 @@ exports[`Matches shallow shapshot 1`] = `
               },
             ]
           }
+          placeholder="Select Keywords"
+          selectRef={[Function]}
           simpleValue={true}
           value={null}
         />
@@ -68,6 +73,9 @@ exports[`Matches shallow shapshot 1`] = `
           htmlFor="community-select"
         >
           Sub community
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           autoBlur={true}
@@ -77,14 +85,16 @@ exports[`Matches shallow shapshot 1`] = `
           options={
             Array [
               Object {
-                "label": <div>
+                "data": <div>
                   Sample community
                 </div>,
+                "label": "Sample community",
                 "name": "Sample community",
                 "value": "123",
               },
             ]
           }
+          selectRef={[Function]}
           simpleValue={true}
           value="1"
           valueRenderer={[Function]}
@@ -102,6 +112,9 @@ exports[`Matches shallow shapshot 1`] = `
           htmlFor="track-select"
         >
           Subtrack
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           id="track-select"
@@ -119,6 +132,8 @@ exports[`Matches shallow shapshot 1`] = `
               },
             ]
           }
+          placeholder="Select Subtrack"
+          selectRef={[Function]}
           simpleValue={true}
           value={null}
         />
@@ -130,6 +145,9 @@ exports[`Matches shallow shapshot 1`] = `
           htmlFor="date-range-picker-one-month"
         >
           Date range
+          <input
+            type="hidden"
+          />
         </label>
         <DateRangePicker
           id="date-range-picker-one-month"
@@ -145,6 +163,9 @@ exports[`Matches shallow shapshot 1`] = `
           htmlFor="date-range-picker-two-months"
         >
           Date range
+          <input
+            type="hidden"
+          />
         </label>
         <DateRangePicker
           id="date-range-picker-two-months"
@@ -248,12 +269,17 @@ exports[`Matches shallow shapshot 2`] = `
           htmlFor="keyword-select"
         >
           Keywords
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           id="keyword-select"
           multi={true}
           onChange={[Function]}
           options={Array []}
+          placeholder="Select Keywords"
+          selectRef={[Function]}
           simpleValue={true}
           value={null}
         />
@@ -265,6 +291,9 @@ exports[`Matches shallow shapshot 2`] = `
           htmlFor="community-select"
         >
           Sub community
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           autoBlur={true}
@@ -274,14 +303,16 @@ exports[`Matches shallow shapshot 2`] = `
           options={
             Array [
               Object {
-                "label": <div>
+                "data": <div>
                   Sample community
                 </div>,
+                "label": "Sample community",
                 "name": "Sample community",
                 "value": "123",
               },
             ]
           }
+          selectRef={[Function]}
           simpleValue={true}
           value="1"
           valueRenderer={[Function]}
@@ -299,12 +330,17 @@ exports[`Matches shallow shapshot 2`] = `
           htmlFor="track-select"
         >
           Subtrack
+          <input
+            type="hidden"
+          />
         </label>
         <Select
           id="track-select"
           multi={true}
           onChange={[Function]}
           options={Array []}
+          placeholder="Select Subtrack"
+          selectRef={[Function]}
           simpleValue={true}
           value={null}
         />
@@ -316,6 +352,9 @@ exports[`Matches shallow shapshot 2`] = `
           htmlFor="date-range-picker-one-month"
         >
           Date range
+          <input
+            type="hidden"
+          />
         </label>
         <DateRangePicker
           id="date-range-picker-one-month"
@@ -331,6 +370,9 @@ exports[`Matches shallow shapshot 2`] = `
           htmlFor="date-range-picker-two-months"
         >
           Date range
+          <input
+            type="hidden"
+          />
         </label>
         <DateRangePicker
           id="date-range-picker-two-months"

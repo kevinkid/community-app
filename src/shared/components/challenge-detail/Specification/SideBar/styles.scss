@@ -1,25 +1,4 @@
-@import "~styles/mixins";
-$tc-link-visited: #0c4e98;
-
-@mixin linkStyle {
-  a {
-    color: $tc-dark-blue;
-    word-wrap: break-word;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  a:active {
-    text-decoration: underline;
-    color: $tc-dark-blue-70;
-  }
-
-  a:visited {
-    color: $tc-link-visited;
-  }
-}
+@import "mixins";
 
 .challenge-spec-sidebar {
   background: $tc-dark-blue-10;
@@ -52,7 +31,7 @@ $tc-link-visited: #0c4e98;
 }
 
 .tctooltip {
-  background: $tc-green;
+  background: $tc-green-110;
   font-style: roboto;
   font-weight: 700;
   font-size: 13px;
@@ -112,7 +91,7 @@ $tc-link-visited: #0c4e98;
     padding-bottom: 7px;
   }
 
-  h3 {
+  h2 {
     @include roboto-bold;
 
     font-size: 13px;
@@ -121,7 +100,7 @@ $tc-link-visited: #0c4e98;
     padding-bottom: 2px;
   }
 
-  h4 {
+  h3 {
     @include roboto-bold;
 
     font-size: 13px;
@@ -130,19 +109,12 @@ $tc-link-visited: #0c4e98;
     margin-top: 4 * $base-unit;
   }
 
-  h4:first-of-type {
+  h3:first-of-type {
     margin-top: 2 * $base-unit;
   }
 
   .link-like-paragraph {
-    @include roboto-regular;
-
-    font-size: 13px;
-    color: $tc-gray-90;
-    line-height: 20px;
-    margin: 0 0 20px;
-
-    @include linkStyle;
+    @include linkLikeParagraph;
   }
 
   ol {
@@ -205,4 +177,3 @@ $tc-link-visited: #0c4e98;
     margin-bottom: 3 * $base-unit;
   }
 }
-

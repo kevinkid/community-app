@@ -23,14 +23,15 @@ class LeaderboardPageContainer extends React.Component {
       isLoadingLeaderboard,
       loadLeaderboard,
       loadedApiUrl,
+      id,
     } = this.props;
     if (!(apiUrl === loadedApiUrl || isLoadingLeaderboard)) {
-      loadLeaderboard(auth, apiUrl);
+      loadLeaderboard(auth, apiUrl, id);
     }
   }
 
   render() {
-    const { HeadBanner, leaderboardData } = this.props;
+    const { HeadBanner, leaderboardData, isTopGear } = this.props;
     const ld = leaderboardData || [];
     return (
       <div>
@@ -53,10 +54,10 @@ class LeaderboardPageContainer extends React.Component {
         {/* eslint-enable max-len */}
         <div styleName="Leaderboard">
           <h2 styleName="section-title">
-Leaderboard
+            Leaderboard
           </h2>
-          <Podium competitors={ld.slice(0, 3)} />
-          <LeaderboardTable competitors={ld.slice(3)} />
+          <Podium competitors={ld.slice(0, 3)} isTopGear={isTopGear} />
+          <LeaderboardTable competitors={ld.slice(3)} isTopGear={isTopGear} />
         </div>
         <NewsletterSignup
           title="Sign up for our newsletter"
@@ -69,6 +70,7 @@ Leaderboard
 }
 
 LeaderboardPageContainer.defaultProps = {
+  id: 'communityLeaderboard',
   HeadBanner: null,
   leaderboardData: [],
   isLoadingLeaderboard: false,
@@ -77,9 +79,11 @@ LeaderboardPageContainer.defaultProps = {
   // TODO: make it null, when we don't need a demo page
   apiUrl: 'http://www.mocky.io/v2/59098e60100000b60747c10b',
   auth: null,
+  isTopGear: false,
 };
 
 LeaderboardPageContainer.propTypes = {
+  id: PT.string,
   HeadBanner: PT.func,
   leaderboardData: PT.arrayOf(PT.shape()),
   isLoadingLeaderboard: PT.bool,
@@ -87,19 +91,28 @@ LeaderboardPageContainer.propTypes = {
   loadedApiUrl: PT.string,
   apiUrl: PT.string,
   auth: PT.shape(),
+  isTopGear: PT.bool,
 };
 
-const mapStateToProps = state => ({
-  leaderboardData: state.leaderboard.data,
-  isLoadingLeaderboard: state.leaderboard.loading,
-  loadedApiUrl: state.leaderboard.loadedApiUrl,
-  auth: state.auth,
-});
+function mapStateToProps(state, props) {
+  const ldId = props.id || LeaderboardPageContainer.defaultProps.id;
+  return state.leaderboard[ldId] ? {
+    leaderboardData: state.leaderboard[ldId].data,
+    isLoadingLeaderboard: state.leaderboard[ldId].loading,
+    loadedApiUrl: state.leaderboard[ldId].loadedApiUrl,
+    auth: state.auth,
+  } : {
+    leaderboardData: null,
+    isLoadingLeaderboard: false,
+    loadedApiUrl: null,
+    auth: state.auth,
+  };
+}
 
 const mapDispatchToProps = dispatch => ({
-  loadLeaderboard: (auth, apiUrl) => {
-    dispatch(actions.leaderboard.fetchLeaderboardInit());
-    dispatch(actions.leaderboard.fetchLeaderboardDone(auth, apiUrl));
+  loadLeaderboard: (auth, apiUrl, id) => {
+    dispatch(actions.leaderboard.fetchLeaderboardInit({ id }));
+    dispatch(actions.leaderboard.fetchLeaderboardDone(auth, apiUrl, id));
   },
 });
 

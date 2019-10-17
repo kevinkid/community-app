@@ -37,8 +37,13 @@
   text-transform: capitalize;
   margin-right: 20px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-right: 0;
+  }
+
+  &.single-line {
+    flex-direction: row;
+    align-items: center;
   }
 }
 
@@ -48,7 +53,11 @@
   margin-bottom: 10px;
   word-break: break-all;
 
-  @include xs-to-sm {
+  &.single-line {
+    margin-bottom: 0;
+  }
+
+  @include upto-sm {
     margin-bottom: 0;
   }
 }
@@ -57,7 +66,7 @@
   color: $tc-gray-50;
   font-weight: 400;
 
-  @include xs-to-sm {
+  @include upto-sm {
     display: none;
   }
 }
@@ -65,7 +74,7 @@
 .parameter-second-line-mobile {
   display: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     display: flex;
     flex-direction: column;
     color: $tc-gray-50;
@@ -73,33 +82,70 @@
   }
 }
 
-.delete {
+.operation-container {
   display: flex;
-  flex-direction: column;
-  justify-items: center;
-  justify-content: center;
-  cursor: pointer;
-  outline-style: none;
-  margin-left: 10px;
+  flex-direction: row;
+  justify-content: space-between;
 
-  img {
-    margin-bottom: 10px;
+  .delete {
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline-style: none;
+    margin-left: 10px;
 
-    @include xs-to-sm {
-      margin-bottom: 0;
+    img {
+      margin-bottom: 10px;
+
+      @include upto-sm {
+        margin-bottom: 0;
+      }
+    }
+
+    p {
+      @include roboto-regular;
+
+      font-size: 11px;
+      line-height: 15px;
+      font-weight: 400;
+      color: $tc-gray-50;
+
+      @include upto-sm {
+        display: none;
+      }
     }
   }
 
-  p {
-    @include roboto-regular;
+  .edit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline-style: none;
+    margin-left: 10px;
 
-    font-size: 11px;
-    line-height: 15px;
-    font-weight: 400;
-    color: $tc-gray-50;
+    img {
+      margin-bottom: 10px;
 
-    @include xs-to-sm {
-      display: none;
+      @include upto-sm {
+        margin-bottom: 0;
+      }
+    }
+
+    p {
+      @include roboto-regular;
+
+      font-size: 11px;
+      line-height: 15px;
+      font-weight: 400;
+      color: $tc-gray-50;
+
+      @include upto-sm {
+        display: none;
+      }
     }
   }
 }

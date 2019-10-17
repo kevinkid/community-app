@@ -9,7 +9,7 @@
   flex-direction: column;
   align-items: left;
 
-  @include xs-to-sm {
+  @include upto-sm {
     padding-bottom: 0;
     border-bottom: 1px solid #c3c3c8;
 
@@ -27,7 +27,7 @@
     color: $tc-black;
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }
@@ -55,25 +55,9 @@
       display: none;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
-  }
-}
-
-.error-message {
-  display: none;
-
-  &.active {
-    @include roboto-medium;
-
-    display: block;
-    border-radius: 5px;
-    background-color: $tc-red-10;
-    color: $tc-red-110;
-    font-size: 15px;
-    padding: 15px;
-    margin-bottom: 15px;
   }
 }
 
@@ -106,7 +90,7 @@
 .form-container-mobile {
   display: none;
 
-  @include xs-to-sm {
+  @include upto-sm {
     border: 0;
     border-radius: 0;
     border-bottom: 1px solid #c3c3c8;
@@ -128,7 +112,7 @@
     line-height: 30px;
     color: $tc-black;
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin-bottom: 20px;
     }
   }
@@ -140,20 +124,22 @@
     align-content: space-between;
     width: 100%;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: block;
       margin-bottom: 0;
     }
 
     .field {
       display: flex;
+      flex: 1;
       flex-direction: column;
       margin-right: 10px;
       align-content: space-between;
       width: 100%;
 
-      @include xs-to-sm {
-        display: block;
+      @include upto-sm {
+        display: flex;
+        flex-direction: column;
         padding-bottom: 10px;
       }
 
@@ -164,11 +150,17 @@
         line-height: 15px;
         color: $tc-gray-80;
         margin-bottom: 6px;
+
+        .text-required {
+          font-size: 10px;
+          color: $tc-red-110;
+          margin-left: 5px;
+        }
       }
 
       .col-1,
       .col-2 {
-        width: auto;
+        // width: auto;
       }
     }
 
@@ -181,7 +173,7 @@
 .button-save {
   align-self: center;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 10px;
   }
 
@@ -195,7 +187,7 @@
     padding: 0;
     width: 200px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       width: 156px;
     }
   }
@@ -219,27 +211,27 @@
       margin: 0 -15px;
     }
 
-    @include xs-to-sm {
-      width: 300px;
-      padding: 0 22px;
+    @include upto-sm {
+      padding: 30px 22px 0;
       margin: 0 -8px;
+      justify-content: center;
     }
   }
 
   li {
-    margin: 0 10px 55px;
+    margin: 0 10px 10px;
     border-radius: 6px;
 
     @include xs-to-lg {
       margin: 0 15px 75px;
     }
 
-    @include xs-to-sm {
+    @include upto-sm {
       margin: 0 8px 75px;
     }
   }
 
-  @include xs-to-sm {
+  @include upto-sm {
     &.hide {
       display: none;
     }
@@ -247,18 +239,43 @@
 }
 
 .skill-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 75px;
-  width: 75px;
-
   a {
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 75px;
+    width: 75px;
   }
 
   a:hover {
     text-decoration: none;
+  }
+
+  .name-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 75px;
+    padding-top: 5px;
+    padding-bottom: 10px;
+    flex-shrink: 0;
+
+    .name {
+      @include roboto-regular;
+
+      font-size: 12px;
+      line-height: 15px;
+      color: #262628;
+      text-align: center;
+    }
+
+    .verified-badge {
+      padding-left: 5px;
+      font-size: 0;
+    }
   }
 
   .skill-icon {
@@ -273,6 +290,7 @@
     border-radius: 6px;
     height: 75px;
     width: 75px;
+    flex-shrink: 0;
 
     .remove-indicator {
       position: absolute;
@@ -316,16 +334,6 @@
     }
   }
 
-  .name {
-    @include roboto-regular;
-
-    margin-top: 10px;
-    font-size: 12px;
-    line-height: 15px;
-    color: #262628;
-    text-align: center;
-  }
-
   a.skill-hidden {
     img {
       opacity: 0.3;
@@ -360,8 +368,9 @@
 
 .mobile-buttons {
   display: none;
+  margin-top: 10px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
@@ -397,7 +406,7 @@
   color: $tc-gray-80;
   font-size: 15px;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 5px;
   }
 }
@@ -413,7 +422,7 @@
     height: 38px;
     line-height: 40px !important;
 
-    @include xs-to-sm {
+    @include upto-sm {
       line-height: 38px !important;
     }
   }
@@ -426,7 +435,7 @@
 .skill-container .form-container .row .field :global .Select-placeholder {
   color: $tc-gray-50;
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-top: 5px;
   }
 }

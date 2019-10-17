@@ -7,6 +7,7 @@ import React from 'react';
 import PT from 'prop-types';
 
 import ArrowDown from 'assets/images/arrow-down.svg';
+import ErrorWrapper from 'components/Settings/ErrorWrapper';
 
 import './styles.scss';
 
@@ -32,18 +33,9 @@ export default class Accordion extends React.Component {
     };
   }
 
-  /*
-   * Sync the state of the Accordion with the state of the Sidebar
-   */
-  componentWillReceiveProps(nextProps) {
-    const {
-      hasToggled,
-      currentItem,
-    } = this.state;
-    const { currentSidebarTab } = nextProps;
-    if (hasToggled && currentItem !== currentSidebarTab) {
-      this.setState({ currentItem: currentSidebarTab });
-    }
+  componentDidMount() {
+    const { currentSidebarTab } = this.props;
+    this.setState({ currentItem: currentSidebarTab });
   }
 
   /*
@@ -110,13 +102,15 @@ export default class Accordion extends React.Component {
                   {name}
                 </p>
                 <span styleName="arrow-container">
-                  <ArrowDown width="15px" height="15px" transform={`${this.isOpened(name) ? 'rotate(180)' : ''}`} />
+                  <ArrowDown styleName={`${this.isOpened(name) ? 'up' : ''}`} width="15px" height="15px" />
                 </span>
               </div>
               {
                 this.isOpened(name) ? (
                   <div>
-                    {renderTabContent(name)}
+                    <ErrorWrapper>
+                      {renderTabContent(name)}
+                    </ErrorWrapper>
                   </div>
                 ) : null
               }

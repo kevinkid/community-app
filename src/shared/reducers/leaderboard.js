@@ -15,8 +15,24 @@ import { getAuthTokens } from 'utils/tc';
 function onDone(state, action) {
   return {
     ...state,
-    data: action.error ? null : action.payload.data,
-    loadedApiUrl: action.error ? null : action.payload.loadedApiUrl,
+    [action.payload.id]: {
+      data: action.error ? null : action.payload.data,
+      loadedApiUrl: action.error ? null : action.payload.loadedApiUrl,
+      failed: !!action.error,
+      loading: false,
+    },
+  };
+}
+
+/**
+ * Handles GET_TCO_HISTORY_CHALLENGES_DONE action.
+ * @param {Object} state Previous state.
+ * @param {Object} action Action.
+ */
+function onHistoryChallengesDone(state, action) {
+  return {
+    ...state,
+    challenges: action.error ? [] : action.payload.challenges,
     failed: !!action.error,
     loading: false,
   };
@@ -29,16 +45,31 @@ function onDone(state, action) {
  */
 function create(initialState) {
   return redux.handleActions({
-    [actions.leaderboard.fetchLeaderboardInit](state) {
+    [actions.leaderboard.fetchLeaderboardInit](state, action) {
       return {
         ...state,
-        data: null,
-        loadedApiUrl: null,
-        failed: false,
-        loading: true,
+        [action.payload.id]: {
+          data: null,
+          loadedApiUrl: null,
+          failed: false,
+          loading: true,
+        },
       };
     },
     [actions.leaderboard.fetchLeaderboardDone]: onDone,
+    [actions.leaderboard.getTcoHistoryChallengesInit](state) {
+      return {
+        ...state,
+        loading: true,
+      };
+    },
+    [actions.leaderboard.getTcoHistoryChallengesDone]: onHistoryChallengesDone,
+    [actions.leaderboard.resetTcoHistoryChallenges](state) {
+      return {
+        ...state,
+        challenges: [],
+      };
+    },
   }, initialState || {});
 }
 

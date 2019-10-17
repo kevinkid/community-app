@@ -1,10 +1,14 @@
 @import "../../style";
 
+.hide {
+  display: none;
+}
+
 .community-container {
   h1 {
     margin-bottom: 20px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       line-height: 70px;
       margin-bottom: 0;
       font-size: 20px;
@@ -14,11 +18,11 @@
 
   margin-bottom: 40px;
 
-  @include md-to-lg {
+  @include from-sm-to-lg {
     margin-bottom: 0;
   }
 
-  @include xs-to-sm {
+  @include upto-sm {
     margin-bottom: 0;
   }
 
@@ -27,7 +31,7 @@
 
     margin-bottom: 25px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       font-size: 20px;
       line-height: 30px;
       margin: 20px;
@@ -44,7 +48,7 @@
     margin-bottom: 30px;
     margin-top: 10px;
 
-    @include xs-to-sm {
+    @include upto-sm {
       display: none;
     }
   }

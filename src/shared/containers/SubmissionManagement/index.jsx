@@ -7,13 +7,13 @@
 
 import _ from 'lodash';
 import AccessDenied, { CAUSE as ACCESS_DENIED_REASON } from 'components/tc-communities/AccessDenied';
-import Modal from 'components/Modal';
 import Button from 'components/Button';
 import LoadingIndicator from 'components/LoadingIndicator';
 import SubmissionManagement from 'components/SubmissionManagement/SubmissionManagement';
 import React from 'react';
 import PT from 'prop-types';
 import { connect } from 'react-redux';
+import { Modal } from 'topcoder-react-ui-kit';
 import { config } from 'topcoder-react-utils';
 import { actions } from 'topcoder-react-lib';
 
@@ -65,7 +65,7 @@ class SubmissionManagementPageContainer extends React.Component {
       showModal,
       toBeDeletedId,
     } = this.props;
-    const isRegistered = registrants.find(r => r.handle === handle);
+    const isRegistered = registrants.find(r => _.toString(r.handle) === _.toString(handle));
     if (!isRegistered) return <AccessDenied redirectLink={`${challengesUrl}/${challenge.id}`} cause={ACCESS_DENIED_REASON.HAVE_NOT_SUBMITTED_TO_THE_CHALLENGE} />;
 
     const isEmpty = _.isEmpty(challenge);
@@ -81,7 +81,7 @@ class SubmissionManagementPageContainer extends React.Component {
 
     return (
       <div styleName="outer-container">
-        <div styleName="submission-management-container">
+        <div styleName="submission-management-container" role="main">
           {!isEmpty
             && (
             <SubmissionManagement

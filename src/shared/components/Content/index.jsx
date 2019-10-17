@@ -405,6 +405,12 @@ export default function Content() {
             Veterans Community
           </Link>
         </li>
+        <li>
+          <Link to="/__community__/zurich">
+            Zurich Community
+          </Link>
+        </li>
+
       </ul>
 
       <h3>
@@ -479,6 +485,16 @@ Blog
             <code>
               Viewport
             </code>
+          </Link>
+        </li>
+        <li>
+          <Link to="/examples/contentful/blog-feed/6A61WFKFjimSWoe04ukOI4">
+            <code>BlogFeed</code>
+          </Link>
+        </li>
+        <li>
+          <Link to="/examples/contentful/modal/Pg4e60qnOpfTDxZgMfopT">
+            <code>Modal</code>
           </Link>
         </li>
       </ul>
@@ -722,6 +738,13 @@ Blog
           &ndash; A component that can be passed markdown as a prop and will
           render it as native React elements.  Also supports inlining a subset
           of the JSX Components found in Community App.
+        </li>
+        <li>
+          <Link to="/examples/looker">
+              Looker
+          </Link>
+          &zwnj;
+          &ndash; Looker examples.
         </li>
         <li>
           <Link to="/examples/scalable-rect">

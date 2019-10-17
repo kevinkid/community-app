@@ -9,36 +9,43 @@
 import React from 'react';
 import PT from 'prop-types';
 import _ from 'lodash';
-import UserConsentModal from 'components/Settings/UserConsentModal';
+import ConsentComponent from 'components/Settings/ConsentComponent';
+import ErrorMessage from 'components/Settings/ErrorMessage';
 import { PrimaryButton } from 'topcoder-react-ui-kit';
+import ConfirmationModal from '../../CofirmationModal';
 import SubscriptionList from './List';
 
-import './styles.scss';
+import styles from './styles.scss';
 
-
-export default class Subscription extends React.Component {
+export default class Subscription extends ConsentComponent {
   constructor(props) {
     super(props);
+    this.onHandleDeleteSubscription = this.onHandleDeleteSubscription.bind(this);
     this.onDeleteSubscription = this.onDeleteSubscription.bind(this);
+    this.onEditSubscription = this.onEditSubscription.bind(this);
     this.onUpdateSelect = this.onUpdateSelect.bind(this);
     this.loadSubscriptionTrait = this.loadSubscriptionTrait.bind(this);
     this.onUpdateInput = this.onUpdateInput.bind(this);
+    this.onHandleAddSubscription = this.onHandleAddSubscription.bind(this);
     this.onAddSubscription = this.onAddSubscription.bind(this);
     this.loadPersonalizationTrait = this.loadPersonalizationTrait.bind(this);
-    this.onShowUserConsent = this.onShowUserConsent.bind(this);
     this.updatePredicate = this.updatePredicate.bind(this);
+    this.onCancelEditStatus = this.onCancelEditStatus.bind(this);
 
+    const { userTraits } = props;
     this.state = {
       formInvalid: false,
-      showUserConsent: false,
-      errorMessage: '',
-      subscriptionTrait: this.loadSubscriptionTrait(props.userTraits),
-      personalizationTrait: this.loadPersonalizationTrait(props.userTraits),
+      isSubmit: false,
+      subscriptionTrait: this.loadSubscriptionTrait(userTraits),
+      personalizationTrait: this.loadPersonalizationTrait(userTraits),
       newSubscription: {
         name: '',
       },
       isMobileView: false,
-      screenSM: 768,
+      screenSM: 767,
+      showConfirmation: false,
+      indexNo: null,
+      isEdit: false,
     };
   }
 
@@ -54,7 +61,7 @@ export default class Subscription extends React.Component {
       subscriptionTrait,
       personalizationTrait,
       formInvalid: false,
-      errorMessage: '',
+      isSubmit: false,
       newSubscription: {
         name: '',
       },
@@ -69,13 +76,30 @@ export default class Subscription extends React.Component {
    * Show User Consent Modal
    * @param e event
    */
-  onShowUserConsent(e) {
+  onHandleAddSubscription(e) {
     e.preventDefault();
     const { newSubscription } = this.state;
+    this.setState({ isSubmit: true });
     if (this.onCheckFormValue(newSubscription)) {
       return;
     }
-    this.setState({ showUserConsent: true });
+    this.showConsent(this.onAddSubscription.bind(this));
+  }
+
+  /**
+   * Edit Subscription by index
+   * @param indexNo the Subscription index no
+   */
+  onEditSubscription(indexNo) {
+    const { subscriptionTrait } = this.state;
+    this.setState({
+      newSubscription: {
+        name: subscriptionTrait.traits.data[indexNo].name,
+      },
+      isEdit: true,
+      indexNo,
+      isSubmit: false,
+    });
   }
 
   /**
@@ -86,19 +110,19 @@ export default class Subscription extends React.Component {
   onCheckFormValue(newSubscription) {
     let invalid = false;
 
-    let errorMessage = '';
-
     if (!_.trim(newSubscription.name).length) {
-      errorMessage += 'Name';
       invalid = true;
     }
 
-    if (errorMessage.length > 0) {
-      errorMessage += ' cannot be empty';
-    }
-
-    this.setState({ errorMessage, formInvalid: invalid });
+    this.setState({ formInvalid: invalid });
     return invalid;
+  }
+
+  onHandleDeleteSubscription(indexNo) {
+    this.setState({
+      showConfirmation: true,
+      indexNo,
+    });
   }
 
   /**
@@ -125,17 +149,22 @@ export default class Subscription extends React.Component {
     } else {
       deleteUserTrait(handle, 'subscription', tokenV3);
     }
+    this.setState({
+      showConfirmation: false,
+      indexNo: null,
+      formInvalid: false,
+      isSubmit: false,
+    });
   }
 
   /**
    * Add new subscription
-   * @param e form submit event
    * @param answer user consent answer value
    */
-  onAddSubscription(e, answer) {
-    e.preventDefault();
-    this.setState({ showUserConsent: false });
-    const { newSubscription, personalizationTrait } = this.state;
+  onAddSubscription(answer) {
+    const {
+      newSubscription, personalizationTrait, isEdit, indexNo,
+    } = this.state;
 
     const {
       handle,
@@ -145,23 +174,27 @@ export default class Subscription extends React.Component {
     } = this.props;
     const { subscriptionTrait } = this.state;
     if (subscriptionTrait.traits && subscriptionTrait.traits.data.length > 0) {
-      const newSubscriptionTrait = { ...subscriptionTrait };
+      const newSubscriptionTrait = _.cloneDeep(subscriptionTrait);
+      if (isEdit) {
+        newSubscriptionTrait.traits.data.splice(indexNo, 1);
+      }
       newSubscriptionTrait.traits.data.push(newSubscription);
-      this.setState({ subscriptionTrait: newSubscriptionTrait });
       updateUserTrait(handle, 'subscription', newSubscriptionTrait.traits.data, tokenV3);
     } else {
       const newSubscriptions = [];
       newSubscriptions.push(newSubscription);
-      const traits = {
-        data: newSubscriptions,
-      };
-      this.setState({ subscriptionTrait: { traits } });
       addUserTrait(handle, 'subscription', newSubscriptions, tokenV3);
     }
     const empty = {
       name: '',
     };
-    this.setState({ newSubscription: empty });
+    this.setState({
+      newSubscription: empty,
+      isEdit: false,
+      indexNo: null,
+      inputChanged: false,
+      isSubmit: false,
+    });
     // save personalization
     if (_.isEmpty(personalizationTrait)) {
       const personalizationData = { userConsent: answer };
@@ -183,7 +216,7 @@ export default class Subscription extends React.Component {
     const { newSubscription: oldSubscription } = this.state;
     const newSubscription = { ...oldSubscription };
     newSubscription[e.target.name] = e.target.value;
-    this.setState({ newSubscription });
+    this.setState({ newSubscription, isSubmit: false });
   }
 
   /**
@@ -195,7 +228,7 @@ export default class Subscription extends React.Component {
       const { newSubscription: oldSubscription } = this.state;
       const newSubscription = { ...oldSubscription };
       newSubscription[option.key] = option.name;
-      this.setState({ newSubscription });
+      this.setState({ newSubscription, isSubmit: false });
     }
   }
 
@@ -224,20 +257,43 @@ export default class Subscription extends React.Component {
     this.setState({ isMobileView: window.innerWidth <= screenSM });
   }
 
+  onCancelEditStatus() {
+    const { isEdit } = this.state;
+    if (isEdit) {
+      this.setState({
+        isEdit: false,
+        indexNo: null,
+        formInvalid: false,
+        isSubmit: false,
+        newSubscription: {
+          name: '',
+        },
+      });
+    }
+  }
+
   render() {
-    const { subscriptionTrait, showUserConsent, isMobileView } = this.state;
+    const {
+      subscriptionTrait, isMobileView, showConfirmation, indexNo, isEdit, isSubmit,
+    } = this.state;
     const subscriptionItems = subscriptionTrait.traits
       ? subscriptionTrait.traits.data.slice() : [];
-    const { newSubscription, formInvalid, errorMessage } = this.state;
+    const { newSubscription, formInvalid } = this.state;
+    const canModifyTrait = !this.props.traitRequestCount;
 
     return (
       <div styleName="subscription-container">
         {
-          showUserConsent && (<UserConsentModal onSaveTrait={this.onAddSubscription} />)
+          this.shouldRenderConsent() && this.renderConsent()
         }
-        <div styleName={`error-message ${formInvalid ? 'active' : ''}`}>
-          { errorMessage }
-        </div>
+        {showConfirmation
+        && (
+          <ConfirmationModal
+            onConfirm={() => this.showConsent(this.onDeleteSubscription.bind(this, indexNo))}
+            onCancel={() => this.setState({ showConfirmation: false, indexNo: null })}
+            name={subscriptionTrait.traits.data[indexNo].name}
+          />
+        )}
         <h1>
           Subscriptions
         </h1>
@@ -249,12 +305,17 @@ export default class Subscription extends React.Component {
           && (
             <SubscriptionList
               subscriptionList={{ items: subscriptionItems }}
-              onDeleteItem={this.onDeleteSubscription}
+              onDeleteItem={this.onHandleDeleteSubscription}
+              disabled={!canModifyTrait}
+              onEditItem={this.onEditSubscription}
             />
           )
         }
         <div styleName={`sub-title ${subscriptionItems.length > 0 ? 'second' : 'first'}`}>
-          Add a new subscription
+          {
+            isEdit ? (<React.Fragment>Edit subscription</React.Fragment>)
+              : (<React.Fragment>Add a new subscription</React.Fragment>)
+          }
         </div>
         <div styleName="form-container-default">
           <form name="device-form" noValidate autoComplete="off">
@@ -262,46 +323,96 @@ export default class Subscription extends React.Component {
               <div styleName="field col-1">
                 <label htmlFor="name">
                   Name
+                  <input type="hidden" />
                 </label>
               </div>
               <div styleName="field col-2">
                 <span styleName="text-required">* Required</span>
-                <input id="name" name="name" type="text" placeholder="Name" onChange={this.onUpdateInput} value={newSubscription.name} maxLength="128" required />
+                <input disabled={!canModifyTrait} id="name" name="name" type="text" placeholder="Name" onChange={this.onUpdateInput} value={newSubscription.name} maxLength="128" required />
+                {
+                  isSubmit && (
+                    <ErrorMessage invalid={formInvalid} message="Name cannot be empty" />
+                  )
+                }
               </div>
             </div>
           </form>
-          <div styleName="button-save">
-            <PrimaryButton
-              styleName="complete"
-              onClick={this.onShowUserConsent}
-            >
-              Add subscription to your list
-            </PrimaryButton>
+          <div styleName="button-container">
+            <div styleName="button-save">
+              <PrimaryButton
+                theme={{ button: styles.complete }}
+                onClick={this.onHandleAddSubscription}
+              >
+                {
+                  isEdit ? (<React.Fragment>Edit subscription to your list</React.Fragment>)
+                    : (<React.Fragment>Add subscription to your list</React.Fragment>)
+                }
+              </PrimaryButton>
+            </div>
+            {
+              isEdit && (
+                <div styleName="button-cancel">
+                  <PrimaryButton
+                    styleName="complete"
+                    onClick={this.onCancelEditStatus}
+                  >
+                    Cancel
+                  </PrimaryButton>
+                </div>
+              )
+            }
           </div>
         </div>
         <div styleName="form-container-mobile">
           <form name="subscription-form" noValidate autoComplete="off">
             <div styleName="row">
               <p>
-                Add Subscription
+                {
+                  isEdit ? (<React.Fragment>Edit Subscription</React.Fragment>)
+                    : (<React.Fragment>Add Subscription</React.Fragment>)
+                }
               </p>
             </div>
             <div styleName="row">
               <div styleName="field col-1">
                 <label htmlFor="name">
                   Name
+                  <span styleName="text-required">* Required</span>
+                  <input type="hidden" />
                 </label>
-                <input id="name" name="name" type="text" placeholder="Name" onChange={this.onUpdateInput} value={newSubscription.name} maxLength="128" required />
+                <input disabled={!canModifyTrait} id="name" name="name" type="text" placeholder="Name" onChange={this.onUpdateInput} value={newSubscription.name} maxLength="128" required />
+                {
+                  isSubmit && (
+                    <ErrorMessage invalid={formInvalid} message="Name cannot be empty" />
+                  )
+                }
               </div>
             </div>
           </form>
-          <div styleName="button-save">
-            <PrimaryButton
-              styleName="complete"
-              onClick={this.onShowUserConsent}
-            >
-              Add Subscription
-            </PrimaryButton>
+          <div styleName="button-container">
+            <div styleName="button-save">
+              <PrimaryButton
+                theme={{ button: styles.complete }}
+                onClick={this.onHandleAddSubscription}
+              >
+                {
+                  isEdit ? (<React.Fragment>Edit Subscription</React.Fragment>)
+                    : (<React.Fragment>Add Subscription</React.Fragment>)
+                }
+              </PrimaryButton>
+            </div>
+            {
+              isEdit && (
+                <div styleName="button-cancel">
+                  <PrimaryButton
+                    styleName="complete"
+                    onClick={this.onCancelEditStatus}
+                  >
+                    Cancel
+                  </PrimaryButton>
+                </div>
+              )
+            }
           </div>
         </div>
         {
@@ -309,7 +420,9 @@ export default class Subscription extends React.Component {
           && (
             <SubscriptionList
               subscriptionList={{ items: subscriptionItems }}
-              onDeleteItem={this.onDeleteSubscription}
+              onDeleteItem={this.onHandleDeleteSubscription}
+              disabled={!canModifyTrait}
+              onEditItem={this.onEditSubscription}
             />
           )
         }
@@ -321,6 +434,7 @@ export default class Subscription extends React.Component {
 Subscription.propTypes = {
   tokenV3: PT.string.isRequired,
   handle: PT.string.isRequired,
+  traitRequestCount: PT.number.isRequired,
   userTraits: PT.array.isRequired,
   addUserTrait: PT.func.isRequired,
   updateUserTrait: PT.func.isRequired,

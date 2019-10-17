@@ -46,6 +46,8 @@ export default function ChallengeHeader(props) {
     challengeSubtracksMap,
     selectedView,
     showDeadlineDetail,
+    hasFirstPlacement,
+    isMenuOpened,
   } = props;
 
   const {
@@ -227,11 +229,19 @@ export default function ChallengeHeader(props) {
       break;
   }
 
+  // Legacy MMs have a roundId field, but new MMs do not.
+  // This is used to disable registration/submission for legacy MMs.
+  const isLegacyMM = subTrack === 'MARATHON_MATCH' && Boolean(challenge.roundId);
+
+  if (hasFirstPlacement && !_.isEmpty(currentPhases)) {
+    _.some(currentPhases, { phaseType: 'Final Fix', phaseStatus: 'Open' });
+  }
+
   return (
     <div styleName="challenge-outer-container">
       <div styleName="important-detail">
-        <div styleName="title-wrapper">
-          <Link to={challengesUrl}>
+        <div styleName="title-wrapper" aria-hidden={isMenuOpened}>
+          <Link to={challengesUrl} aria-label="Back to challenge list">
             <LeftArrow styleName="left-arrow" />
           </Link>
           <div>
@@ -251,9 +261,9 @@ export default function ChallengeHeader(props) {
         </div>
         <div styleName="prizes-ops-container">
           <div styleName="prizes-outer-container">
-            <h3 styleName="prizes-title">
-PRIZES
-            </h3>
+            <h2 styleName="prizes-title">
+Key Information
+            </h2>
             <Prizes prizes={prizes && prizes.length ? prizes : [0]} pointPrizes={pointPrizes} />
             {
               bonusType ? (
@@ -310,7 +320,8 @@ POINTS:
               {hasRegistered ? (
                 <DangerButton
                   disabled={unregistering || registrationEnded
-                    || hasSubmissions}
+                  || hasSubmissions || isLegacyMM}
+                  forceA
                   onClick={unregisterFromChallenge}
                   theme={{ button: style.challengeAction }}
                 >
@@ -318,7 +329,8 @@ Unregister
                 </DangerButton>
               ) : (
                 <PrimaryButton
-                  disabled={registering || registrationEnded}
+                  disabled={registering || registrationEnded || isLegacyMM}
+                  forceA
                   onClick={registerForChallenge}
                   theme={{ button: style.challengeAction }}
                 >
@@ -326,7 +338,7 @@ Register
                 </PrimaryButton>
               )}
               <PrimaryButton
-                disabled={!hasRegistered || unregistering || submissionEnded}
+                disabled={!hasRegistered || unregistering || submissionEnded || isLegacyMM}
                 theme={{ button: style.challengeAction }}
                 to={`${challengesUrl}/${challengeId}/submit`}
               >
@@ -410,12 +422,33 @@ Show Deadlines
 
 ChallengeHeader.defaultProps = {
   checkpoints: {},
+  isMenuOpened: false,
 };
 
 ChallengeHeader.propTypes = {
   checkpoints: PT.shape(),
   challenge: PT.shape({
     id: PT.number.isRequired,
+    drPoints: PT.any,
+    name: PT.any,
+    subTrack: PT.any,
+    pointPrizes: PT.any,
+    events: PT.any,
+    technologies: PT.any,
+    platforms: PT.any,
+    prizes: PT.any,
+    numberOfCheckpointsPrizes: PT.any,
+    topCheckPointPrize: PT.any,
+    reliabilityBonus: PT.any,
+    userDetails: PT.any,
+    currentPhases: PT.any,
+    numRegistrants: PT.any,
+    numSubmissions: PT.any,
+    status: PT.any,
+    appealsEndDate: PT.any,
+    allPhases: PT.any,
+    track: PT.any,
+    roundId: PT.any,
   }).isRequired,
   challengesUrl: PT.string.isRequired,
   hasRegistered: PT.bool.isRequired,
@@ -430,4 +463,6 @@ ChallengeHeader.propTypes = {
   unregisterFromChallenge: PT.func.isRequired,
   unregistering: PT.bool.isRequired,
   challengeSubtracksMap: PT.shape().isRequired,
+  hasFirstPlacement: PT.bool.isRequired,
+  isMenuOpened: PT.bool,
 };

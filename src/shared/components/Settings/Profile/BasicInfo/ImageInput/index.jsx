@@ -6,7 +6,8 @@
 import React from 'react';
 import PT from 'prop-types';
 
-import { PrimaryButton, Button } from 'topcoder-react-ui-kit';
+import { PrimaryButton } from 'topcoder-react-ui-kit';
+import loadImage from 'blueimp-load-image';
 
 
 import DefaultPortrait from 'assets/images/ico-user-default.svg';
@@ -23,16 +24,17 @@ export default class ImageInput extends React.Component {
 
     this.state = {
       newBasicInfo: {},
+      isImageOversize: false,
     };
   }
 
   componentDidMount() {
-    const { userTraits } = this.props;
-    this.loadBasicInfoTraits(userTraits);
+    const { userTraits, profile } = this.props;
+    this.loadBasicInfoTraits(userTraits, profile);
   }
 
   componentWillReceiveProps(nextProps) {
-    this.loadBasicInfoTraits(nextProps.userTraits);
+    this.loadBasicInfoTraits(nextProps.userTraits, nextProps.profile);
     const {
       profileState,
     } = this.props;
@@ -60,24 +62,57 @@ export default class ImageInput extends React.Component {
       profileState,
       tokenV3,
       uploadPhoto,
+      uploadPhotoInit,
     } = this.props;
     if (profileState.uploadingPhoto) {
       return;
     }
     const fileInput = document.querySelector('#change-image-input');
     const file = fileInput.files[0];
-    uploadPhoto(handle, tokenV3, file);
+    if (file === undefined) {
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      // If file size is greater than 2 MB, show error message
+      this.setState({
+        isImageOversize: true,
+      });
+      return;
+    }
+    this.setState({
+      isImageOversize: false,
+    });
+    uploadPhotoInit();
+    loadImage.parseMetaData(file, (data) => {
+      let orientation = 0;
+      if (data.exif) {
+        orientation = data.exif.get('Orientation');
+      }
+      loadImage(
+        file,
+        (img) => {
+          img.toBlob(
+            (blobResult) => {
+              uploadPhoto(handle, tokenV3, blobResult);
+            },
+          );
+        }, {
+          canvas: true,
+          orientation,
+        },
+      );
+    });
   }
 
   /**
    * Get basic info trait
    * @param userTraits the all user traits
    */
-  loadBasicInfoTraits = (userTraits) => {
+  loadBasicInfoTraits = (userTraits, profile) => {
     const trait = userTraits.filter(t => t.traitId === 'basic_info');
     const basicInfoTrait = trait.length === 0 ? {} : trait[0];
     const basicInfo = basicInfoTrait.traits ? basicInfoTrait.traits.data[0] : {};
-    this.setState({ newBasicInfo: basicInfo });
+    this.setState({ newBasicInfo: { ...basicInfo, photoURL: profile.photoURL } });
   }
 
   render() {
@@ -91,7 +126,7 @@ export default class ImageInput extends React.Component {
       deletingPhoto,
     } = profileState;
 
-    const { newBasicInfo } = this.state;
+    const { newBasicInfo, isImageOversize } = this.state;
 
     return (
       <div styleName="image">
@@ -119,28 +154,10 @@ export default class ImageInput extends React.Component {
                 !uploadingPhoto && !newBasicInfo.photoURL && 'Upload a new avatar'
               }
             </PrimaryButton>
-            <input type="file" name="image" onChange={this.onUploadPhoto} id="change-image-input" className="hidden" />
-            {
-              newBasicInfo.photoURL
-              && (
-                <div>
-                  <Button
-                    onClick={this.onDeletePhoto}
-                    disabled={uploadingPhoto || deletingPhoto}
-                    theme={{ button: Styles['file-delete'] }}
-                  >
-                    {
-                      deletingPhoto && <i className="fa fa-spinner fa-spin" />
-                    }
-                    {
-                      !deletingPhoto && 'Delete avatar'
-                    }
-                  </Button>
-                </div>
-              )
-            }
+            <input type="file" name="image" accept="image/*" onChange={this.onUploadPhoto} id="change-image-input" className="hidden" />
           </div>
         </div>
+        {isImageOversize && <div styleName="error-message">Please select an image smaller than 2MB</div>}
       </div>
     );
   }
@@ -152,4 +169,6 @@ ImageInput.propTypes = {
   userTraits: PT.array.isRequired,
   profileState: PT.shape().isRequired,
   uploadPhoto: PT.func.isRequired,
+  uploadPhotoInit: PT.func.isRequired,
+  profile: PT.shape().isRequired,
 };
